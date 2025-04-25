@@ -1,0 +1,14 @@
+# Node modules
+node_modules/
+
+# 環境変数ファイル
+.env
+
+# ログ
+logs
+*.log
+
+# キャッシュ
+dist/
+build/
+npm-debug.log*

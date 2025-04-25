@@ -1,0 +1,13 @@
+# 依存関係
+node_modules
+
+# 環境変数
+.env
+
+# ログファイル
+*.log
+
+# OS・エディタ関連
+.DS_Store
+.vscode
+.idea
