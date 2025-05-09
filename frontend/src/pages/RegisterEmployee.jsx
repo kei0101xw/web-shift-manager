@@ -6,6 +6,8 @@ const RegisterEmployee = () => {
   const [employee, setEmployee] = useState({
     employeeId: "",
     name: "",
+    email: "",
+    role: "", // 雇用形態（アルバイト・社員・パート）
     password: "",
   });
 
@@ -22,6 +24,7 @@ const RegisterEmployee = () => {
     const newErrors = {};
     const idRegex = /^[0-9]+$/;
     const nameRegex = /^[^\s]+ [^\s]+$/; // 半角スペースが1つ含まれる氏名
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!employee.employeeId) {
       newErrors.employeeId = "従業員番号を入力してください。";
@@ -34,6 +37,16 @@ const RegisterEmployee = () => {
     } else if (!nameRegex.test(employee.name)) {
       newErrors.name =
         "氏名は半角スペースで姓と名を区切ってください。（例: 山田 太郎）";
+    }
+
+    if (!employee.email) {
+      newErrors.email = "メールアドレスを入力してください。";
+    } else if (!emailRegex.test(employee.email)) {
+      newErrors.email = "正しいメールアドレス形式で入力してください。";
+    }
+
+    if (!employee.role) {
+      newErrors.role = "雇用形態を選択してください。";
     }
 
     if (!employee.password) {
@@ -83,6 +96,25 @@ const RegisterEmployee = () => {
             placeholder="例: 山田 太郎"
           />
           {errors.name && <p className="error-message">{errors.name}</p>}
+
+          <label>メールアドレス</label>
+          <input
+            type="email"
+            name="email"
+            value={employee.email}
+            onChange={handleChange}
+            placeholder="例: example@example.com"
+          />
+          {errors.email && <p className="error-message">{errors.email}</p>}
+
+          <label>雇用形態</label>
+          <select name="role" value={employee.role} onChange={handleChange}>
+            <option value="">選択してください</option>
+            <option value="社員">社員</option>
+            <option value="パート">パート</option>
+            <option value="アルバイト">アルバイト</option>
+          </select>
+          {errors.role && <p className="error-message">{errors.role}</p>}
 
           <label>パスワード</label>
           <input
