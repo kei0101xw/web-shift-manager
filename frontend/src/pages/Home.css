@@ -1,0 +1,35 @@
+.home-container {
+  padding: 20px;
+}
+
+.shift-button-group {
+  display: flex;
+  justify-content: space-between;
+}
+
+.shift-button {
+  width: 30%;
+  aspect-ratio: 1 / 1; /*アスペクト比1:1*/
+  margin: 20px 0;
+  border: none;
+  border-radius: 10%;
+  cursor: pointer;
+}
+
+.shift-apply--button {
+  width: 30%;
+  aspect-ratio: 1 / 1; /*アスペクト比1:1*/
+  margin: 20px 0;
+  border: none;
+  border-radius: 10%;
+  cursor: pointer;
+}
+
+.salary-calc-button {
+  width: 30%;
+  aspect-ratio: 1 / 1; /*アスペクト比1:1*/
+  margin: 20px 0;
+  border: none;
+  border-radius: 10%;
+  cursor: pointer;
+}
