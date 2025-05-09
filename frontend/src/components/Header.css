@@ -1,6 +1,6 @@
 /* ヘッダー全体 */
 .header {
-  background-color: #333;
+  background-color: #8b8b8b;
   color: #fff;
   padding: 10px 20px;
   display: flex;
@@ -10,8 +10,10 @@
 }
 
 /* ロゴ */
-.logo {
-  margin: 0;
+.header-logo {
+  margin: 10px 0;
+  width: 200px;
+  height: auto;
 }
 
 /* ハンバーガーボタン */

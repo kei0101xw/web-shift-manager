@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./Header.css";
+import logo from "../assets/logo_trans.png"; // 相対パスでインポート
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -10,7 +11,8 @@ const Header = () => {
 
   return (
     <header className="header">
-      <h1 className="logo">シジャン博多一番街店</h1>
+      <img src={logo} alt="ロゴ画像" className="header-logo" />
+      {/* <h1>シジャン 博多一番街店</h1> */}
       <button className="hamburger" onClick={toggleMenu}>
         <span className="bar"></span>
         <span className="bar"></span>

@@ -4,33 +4,17 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 400px;
-  height: 850vh;
   font-family: "Arial", sans-serif;
   background-color: #ffffff;
-  margin-top: 50px;
+  margin-top: 150px;
 }
 
 /* ロゴ画像のスタイル */
 .logo {
   width: 300px;
   height: auto;
-  display: block;
   margin: 5px auto; /* ロゴを中央に、余白を調整 */
-  margin-bottom: 100px;
-}
-
-/* タイトルとサブタイトル */
-h1 {
-  font-size: 20px; /* デフォルトより少し小さめに */
-  margin-bottom: 0px;
-  margin-top: 600px; /* 上に詰めたい場合はこの値を小さく */
-  text-align: center; /* 必要なら中央揃え */
-}
-
-h2 {
-  font-size: 1.5rem;
-  margin: 20px 0;
+  margin-bottom: 20px;
 }
 
 .login-box {
