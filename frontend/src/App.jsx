@@ -1,26 +1,17 @@
-import { useEffect, useState } from "react";
-import './App.css';
+import { Routes, Route, BrowserRouter } from "react-router-dom";
+import "./App.css";
+import Test from "./pages/Test";
 
 function App() {
-  const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    fetch("http://localhost:8080/api/hello")
-      .then((res) => res.json())
-      .then((data) => setMessage(data.message))
-      .catch((err) => console.error(err));
-  }, []);
-
   return (
-    <div>
-      <h1>バックエンドとの接続テスト</h1>
-      <div className="title">
-        <strong>{message}</strong>
+    <BrowserRouter>
+      <div>
+        <Routes>
+          {/* <Route path="/" element={<Home />} /> */}
+          <Route path="/test" element={<Test />} />
+        </Routes>
       </div>
-      <p>
-        ↑黒帯の中にメッセージが表示されていたら成功
-      </p>
-    </div>
+    </BrowserRouter>
   );
 }
 
