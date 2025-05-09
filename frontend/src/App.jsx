@@ -2,6 +2,7 @@ import { Routes, Route, BrowserRouter } from "react-router-dom";
 import "./App.css";
 import Home from "./pages/Home";
 import LoginEmployee from "./pages/LoginEmployee";
+import LoginManager from "./pages/LoginManager";
 import Start from "./pages/Start";
 import MyShift from "./pages/MyShift";
 import AllShift from "./pages/AllShift";
@@ -18,6 +19,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Start />} />
           <Route path="/loginemployee" element={<LoginEmployee />} />
+          <Route path="/loginmanager" element={<LoginManager />} />
           <Route path="/home" element={<Home />} />
           <Route path="/myshift" element={<MyShift />} />
           <Route path="/allshift" element={<AllShift />} />

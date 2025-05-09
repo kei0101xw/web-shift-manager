@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./LoginEmployee.css"; // CSSのインポート
 import Header from "../components/Header";
 
-export default function LoginForm() {
+export default function LoginFormEmployee() {
   const [emailOrId, setEmailOrId] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
@@ -47,7 +47,7 @@ export default function LoginForm() {
       <div className="login-em-container">
         <div className="login-le-container">
           <form onSubmit={handleSubmit} className="login-form__input">
-            <h2 className="login-title">ログイン(従業員)</h2>
+            <h2 className=".login-employee-title">ログイン(従業員)</h2>
 
             {/* メールアドレス / 従業員番号 */}
             <input
