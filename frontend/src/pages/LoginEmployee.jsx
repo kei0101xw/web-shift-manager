@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./LoginEmployee.css"; // CSSのインポート
 import Header from "../components/Header";
 
-export default function LoginForm() {
+export default function LoginFormEmployee() {
   const [emailOrId, setEmailOrId] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
