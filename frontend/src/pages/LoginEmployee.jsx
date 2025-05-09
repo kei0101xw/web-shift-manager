@@ -45,73 +45,50 @@ export default function LoginForm() {
     <>
       <Header />
       <div className="login-em-container">
-        <div className="flex items-center justify-center h-screen bg-gray-100">
-          <form
-            onSubmit={handleSubmit}
-            className="bg-white p-6 rounded-lg shadow-md w-80"
-          >
-            <h2 className="text-2xl font-bold mb-6 text-center">
-              ログイン(従業員)
-            </h2>
+        <div className="login-le-container">
+          <form onSubmit={handleSubmit} className="login-form__input">
+            <h2 className="login-title">ログイン(従業員)</h2>
 
             {/* メールアドレス / 従業員番号 */}
-            <label
-              className="block mb-2 text-sm font-medium text-gray-700"
-              htmlFor="emailOrId"
-            >
-              {/* メールアドレスまたは従業員番号 */}
-            </label>
             <input
               id="emailOrId"
               type="text"
               value={emailOrId}
               onChange={(e) => setEmailOrId(e.target.value)}
-              className={`w-full px-4 py-2 mb-1 border ${
-                errors.emailOrId ? "border-red-500" : "border-gray-300"
-              } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
+              className={`login-form__input__email ${
+                errors.emailOrId ? "login-form__input_email--error" : ""
+              }`}
               placeholder="メールアドレスまたは従業員番号"
             />
             {errors.emailOrId && (
-              <p className="text-red-500 text-sm mb-2">{errors.emailOrId}</p>
+              <p className="login-form__error">{errors.emailOrId}</p>
             )}
 
             {/* パスワード */}
-            <label
-              className="block mb-2 text-sm font-medium text-gray-700"
-              htmlFor="password"
-            >
-              {/* パスワード */}
-            </label>
+
             <input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={`w-full px-4 py-2 mb-1 border ${
-                errors.password ? "border-red-500" : "border-gray-300"
-              } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
-              // placeholder="4〜8文字"
+              className={`login-form__input__pass ${
+                errors.password ? "login-form__input_pass--error" : ""
+              }`}
               placeholder="パスワード"
             />
             {errors.password && (
-              <p className="text-red-500 text-sm mb-2">{errors.password}</p>
+              <p className="login-form__error">{errors.password}</p>
             )}
 
             {/* パスワードを忘れた方はこちら */}
-            <div className="text-right mb-4">
-              <a
-                href="/forgot-password"
-                className="text-sm text-blue-500 hover:underline"
-              >
+            <div className="login-form__forgot-wrapper">
+              <a href="/forgot-password" className="login-form__forgot-link">
                 パスワードを忘れた方はこちら
               </a>
             </div>
 
             {/* ログインボタン */}
-            <button
-              type="submit"
-              className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors"
-            >
+            <button type="submit" className="login-form__submit-button">
               ログイン
             </button>
 
@@ -119,9 +96,9 @@ export default function LoginForm() {
             <button
               type="button"
               onClick={() => (window.location.href = "/admin-login")}
-              className="w-full mt-2 border border-blue-500 text-blue-500 py-2 rounded-md hover:bg-blue-50 transition-colors"
+              className="login-form__admin-button"
             >
-              管理者の方はこちら
+              管理者の方はこちら ＞
             </button>
           </form>
         </div>
