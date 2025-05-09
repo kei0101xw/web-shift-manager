@@ -1,0 +1,94 @@
+/* 基本の背景 */
+body {
+  font-family: "Arial", sans-serif;
+  background-color: #f7fafc; /* 背景色 */
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 10vh;
+}
+
+/* ログインフォーム */
+.login-form {
+  background-color: #ffffff; /* 背景色 */
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100px; /* 幅 */
+}
+
+.login-form h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+/* ラベル */
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.875rem;
+  color: #4a5568; /* 灰色 */
+}
+
+/* 入力フォーム */
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 8px;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  font-size: 1rem;
+  outline: none;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+  border-color: #3182ce; /* 青色 */
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.5); /* フォーカス時の青い影 */
+}
+
+/* エラーメッセージ */
+.error-message {
+  color: #f56565; /* 赤色 */
+  font-size: 0.875rem;
+  margin-bottom: 8px;
+}
+
+/* パスワードリンク */
+.forgot-password {
+  text-align: right;
+  margin-bottom: 16px;
+}
+
+.forgot-password a {
+  font-size: 0.875rem;
+  color: #3182ce;
+  text-decoration: none;
+}
+
+.forgot-password a:hover {
+  text-decoration: underline;
+}
+
+/* ログインボタン */
+button[type="submit"] {
+  width: 100%;
+  background-color: #000000; /* 青色 */
+  color: white;
+  padding: 12px;
+  border-radius: 100px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button[type="submit"]:hover {
+  background-color: #2b6cb0; /* ホバー時の色 */
+}
+
+/* 管理者リンク */
