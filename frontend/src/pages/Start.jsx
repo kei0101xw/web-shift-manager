@@ -4,7 +4,7 @@ import "./Start.css";
 
 const Start = () => {
   return (
-    <div>
+    <div className="start-container">
       <h1>シジャン博多一番街店</h1>
       <img src={logo} alt="ロゴ画像" className="logo" />
       <div class="login-box">
