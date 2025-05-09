@@ -1,0 +1,75 @@
+/* 全体の中央配置 */
+div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  font-family: "Arial", sans-serif;
+  background-color: #ffffff;
+}
+
+/* ロゴ画像のスタイル */
+.logo {
+  width: 300px !important;
+  height: auto;
+  display: block;
+  margin: 5px auto; /* ロゴを中央に、余白を調整 */
+  margin-bottom: 100px;
+}
+
+/* タイトルとサブタイトル */
+h1 {
+  font-size: 20px; /* デフォルトより少し小さめに */
+  margin-bottom: 0px;
+  margin-top: 0px; /* 上に詰めたい場合はこの値を小さく */
+  text-align: center; /* 必要なら中央揃え */
+}
+
+h2 {
+  font-size: 1.5rem;
+  margin: 20px 0;
+}
+
+.login-box {
+  background-color: #aca9a9; /* グレー背景 */
+  padding: 15px 0;
+  border-radius: 12px;
+  width: 250px;
+  height: 200px;
+  margin: 30px auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.login-title {
+  font-size: 20px;
+  margin-bottom: 10px;
+  margin-bottom: 30px;
+  margin-top: 0px; /* 上に詰めたい場合はこの値を小さく */
+}
+
+.login-button {
+  display: block;
+  width: 100%;
+  margin: 6px 0;
+  padding: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  color: black;
+  transition: background-color 0.3s;
+}
+
+.login-button.employee {
+  background-color: #aca9a9;
+}
+
+.login-button.admin {
+  background-color: #aca9a9;
+}
+
+.login-button:hover {
+  opacity: 0.85;
+}
