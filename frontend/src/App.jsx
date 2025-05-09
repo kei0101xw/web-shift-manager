@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import LoginEmployee from "./pages/LoginEmployee";
 import LoginManager from "./pages/LoginManager";
 import Start from "./pages/Start";
+import RegisterEmployee from "./pages/RegisterEmployee";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="/loginmanager" element={<LoginManager />} />
           <Route path="/home" element={<Home />} />
           <Route path="/test" element={<Test />} />
+          <Route path="/registeremployee" element={<RegisterEmployee />} />
         </Routes>
       </div>
     </BrowserRouter>
