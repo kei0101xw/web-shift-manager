@@ -12,7 +12,7 @@ const Header = () => {
   };
 
   const goToHome = () => {
-    navigate("/");
+    navigate("/home");
   };
 
   return (
