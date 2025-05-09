@@ -1,17 +1,19 @@
 /* 全体の中央配置 */
-div {
+.start-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  width: 400px;
+  height: 850vh;
   font-family: "Arial", sans-serif;
   background-color: #ffffff;
+  margin-top: 50px;
 }
 
 /* ロゴ画像のスタイル */
 .logo {
-  width: 300px !important;
+  width: 300px;
   height: auto;
   display: block;
   margin: 5px auto; /* ロゴを中央に、余白を調整 */
@@ -22,7 +24,7 @@ div {
 h1 {
   font-size: 20px; /* デフォルトより少し小さめに */
   margin-bottom: 0px;
-  margin-top: 0px; /* 上に詰めたい場合はこの値を小さく */
+  margin-top: 600px; /* 上に詰めたい場合はこの値を小さく */
   text-align: center; /* 必要なら中央揃え */
 }
 
@@ -44,9 +46,8 @@ h2 {
 
 .login-title {
   font-size: 20px;
-  margin-bottom: 10px;
   margin-bottom: 30px;
-  margin-top: 0px; /* 上に詰めたい場合はこの値を小さく */
+  margin-top: 30px; /* 上に詰めたい場合はこの値を小さく */
 }
 
 .login-button {
