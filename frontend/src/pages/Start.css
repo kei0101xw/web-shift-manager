@@ -1,0 +1,60 @@
+/* 全体の中央配置 */
+.start-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: "Arial", sans-serif;
+  background-color: #ffffff;
+  margin-top: 150px;
+}
+
+/* ロゴ画像のスタイル */
+.logo {
+  width: 300px;
+  height: auto;
+  margin: 5px auto; /* ロゴを中央に、余白を調整 */
+  margin-bottom: 20px;
+}
+
+.login-box {
+  background-color: #aca9a9; /* グレー背景 */
+  padding: 15px 0;
+  border-radius: 12px;
+  width: 250px;
+  height: 200px;
+  margin: 30px auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.login-title {
+  font-size: 20px;
+  margin-bottom: 30px;
+  margin-top: 30px; /* 上に詰めたい場合はこの値を小さく */
+}
+
+.login-button {
+  display: block;
+  width: 100%;
+  margin: 6px 0;
+  padding: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  color: black;
+  transition: background-color 0.3s;
+}
+
+.login-button.employee {
+  background-color: #aca9a9;
+}
+
+.login-button.admin {
+  background-color: #aca9a9;
+}
+
+.login-button:hover {
+  opacity: 0.85;
+}

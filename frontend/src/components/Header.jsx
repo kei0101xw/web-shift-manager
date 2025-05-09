@@ -1,16 +1,28 @@
 import React, { useState } from "react";
 import "./Header.css";
+import logo from "../assets/logo_trans.png"; // 相対パスでインポート
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
 
+  const goToHome = () => {
+    navigate("/");
+  };
+
   return (
     <header className="header">
-      <h1 className="logo">シジャン博多一番街店</h1>
+      <img
+        src={logo}
+        alt="ロゴ画像"
+        className="header-logo"
+        onClick={goToHome}
+      />
       <button className="hamburger" onClick={toggleMenu}>
         <span className="bar"></span>
         <span className="bar"></span>
