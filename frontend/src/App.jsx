@@ -5,6 +5,7 @@ import LoginEmployee from "./pages/LoginEmployee";
 import LoginManager from "./pages/LoginManager";
 import Start from "./pages/Start";
 import RegisterEmployee from "./pages/RegisterEmployee";
+import ConfirmEmployee from "./pages/ConfirmEmployee";
 import MyShift from "./pages/MyShift";
 import AllShift from "./pages/AllShift";
 import TodayShift from "./pages/TodayShift";
@@ -23,6 +24,7 @@ function App() {
           <Route path="/loginmanager" element={<LoginManager />} />
           <Route path="/home" element={<Home />} />
           <Route path="/registeremployee" element={<RegisterEmployee />} />
+          <Route path="/confirmemployee" element={<ConfirmEmployee />} />
           <Route path="/myshift" element={<MyShift />} />
           <Route path="/allshift" element={<AllShift />} />
           <Route path="/todayshift" element={<TodayShift />} />
