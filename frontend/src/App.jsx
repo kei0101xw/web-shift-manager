@@ -13,6 +13,7 @@ import ShiftApply from "./pages/ShiftApply";
 import ShiftEdit from "./pages/ShiftEdit";
 import SalaryCalc from "./pages/SalaryCalc";
 import NotFound from "./pages/NotFound";
+import EmployeeList from "./pages/EmployeeList";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/loginemployee" element={<LoginEmployee />} />
           <Route path="/loginmanager" element={<LoginManager />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/employeelist" element={<EmployeeList />} />
           <Route path="/registeremployee" element={<RegisterEmployee />} />
           <Route path="/confirmemployee" element={<ConfirmEmployee />} />
           <Route path="/myshift" element={<MyShift />} />
