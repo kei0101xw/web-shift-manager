@@ -1,14 +1,19 @@
 import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom"; // 追加
 import "./RegisterEmployee.css";
 import Header from "../components/Header";
 
 const RegisterEmployee = () => {
+  const navigate = useNavigate(); // 追加
+  const location = useLocation();
+
   const [employee, setEmployee] = useState({
     employeeId: "",
     name: "",
     email: "",
     role: "", // 雇用形態（アルバイト・社員・パート）
     password: "",
+    ...(location.state || {}), // ← これで戻ってきたときの値を初期値にする
   });
 
   const [errors, setErrors] = useState({});
@@ -63,8 +68,9 @@ const RegisterEmployee = () => {
 
     if (!validate()) return;
 
-    console.log("登録データ:", employee);
-    setSubmitted(true);
+    navigate("/confirmemployee", { state: employee }); // 確認ページへ遷移
+    // console.log("登録データ:", employee);
+    // setSubmitted(true);
 
     // TODO: ここでAPI送信処理などを行う
   };
