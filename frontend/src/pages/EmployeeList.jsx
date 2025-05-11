@@ -11,6 +11,15 @@ const EmployeeList = () => {
       { id: 1, name: "田中 太郎" },
       { id: 2, name: "佐藤 花子" },
       { id: 3, name: "鈴木 一郎" },
+      { id: 4, name: "田中 太郎" },
+      { id: 5, name: "佐藤 花子" },
+      { id: 6, name: "鈴木 一郎" },
+      { id: 7, name: "田中 太郎" },
+      { id: 8, name: "佐藤 花子" },
+      { id: 9, name: "鈴木 一郎" },
+      { id: 10, name: "田中 太郎" },
+      { id: 11, name: "佐藤 花子" },
+      { id: 12, name: "鈴木 一郎" },
     ];
     setEmployees(mockEmployees);
   }, []);
