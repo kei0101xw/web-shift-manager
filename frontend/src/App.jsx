@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import EmployeeList from "./pages/EmployeeList";
 import EmployeeDetail from "./pages/EmployeeDetail";
 import EmployeeEdit from "./pages/EmployeeEdit";
+import EmployeeDeleteConfirm from "./EmployeeDeleteConfirm";
 
 function App() {
   return (
@@ -29,6 +30,10 @@ function App() {
           <Route path="/employeelist" element={<EmployeeList />} />
           <Route path="/employees/:id" element={<EmployeeDetail />} />
           <Route path="/employees/:id/edit" element={<EmployeeEdit />} />
+          <Route
+            path="/employees/:id/delete-confirm"
+            element={<EmployeeDeleteConfirm />}
+          />
           <Route path="/registeremployee" element={<RegisterEmployee />} />
           <Route path="/confirmemployee" element={<ConfirmEmployee />} />
           <Route path="/myshift" element={<MyShift />} />
