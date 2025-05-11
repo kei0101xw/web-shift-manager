@@ -13,6 +13,11 @@ const EmployeeDetail = () => {
 
   const employee = mockEmployee[id];
 
+  const handleEditClick = () => {
+    console.log(`従業員ID ${id} を修正します`);
+    // 例：navigate(`/employees/${id}/edit`) に遷移させることも可能
+  };
+
   if (!employee)
     return <p className="employee-detail-notfound">従業員が見つかりません</p>;
 
