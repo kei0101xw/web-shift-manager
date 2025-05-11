@@ -8,18 +8,36 @@ const EmployeeList = () => {
 
   useEffect(() => {
     const mockEmployees = [
-      { id: 1, name: "田中 太郎" },
-      { id: 2, name: "佐藤 花子" },
-      { id: 3, name: "鈴木 一郎" },
-      { id: 4, name: "田中 太郎" },
-      { id: 5, name: "佐藤 花子" },
-      { id: 6, name: "鈴木 一郎" },
-      { id: 7, name: "田中 太郎" },
-      { id: 8, name: "佐藤 花子" },
-      { id: 9, name: "鈴木 一郎" },
-      { id: 10, name: "田中 太郎" },
-      { id: 11, name: "佐藤 花子" },
-      { id: 12, name: "鈴木 一郎" },
+      {
+        employeeId: 123456, //データベース8つで構成
+        name: "田中 太郎",
+        email: "ttt@icloud.com",
+        employmentPeliod: "13ヶ月",
+        workErea: "キッチン",
+        workingHours: 30,
+        role: "アルバイト",
+        pass: "qwer",
+      },
+      {
+        name: "田中 進次郎",
+        email: "ppap@icloud.com",
+        employeeId: "133336",
+        employmentPeliod: "22ヶ月",
+        workErea: "キッチン",
+        workingHours: 150,
+        role: "社員",
+        pass: "erty",
+      },
+      {
+        name: "鈴木 一郎",
+        email: "pasd@icloud.com",
+        employeeId: "333336",
+        employmentPeliod: "33ヶ月",
+        workErea: "ホール",
+        workingHours: 10,
+        role: "パート",
+        pass: "asdd",
+      },
     ];
     setEmployees(mockEmployees);
   }, []);
@@ -30,9 +48,9 @@ const EmployeeList = () => {
       <div className="employee-card-grid">
         {employees.map((employee) => (
           <div
-            key={employee.id}
+            key={employee.employeeId}
             className="employee-card"
-            onClick={() => navigate(`/employees/${employee.id}`)}
+            onClick={() => navigate(`/employees/${employee.employeeId}`)}
           >
             <h2 className="employee-name">{employee.name}</h2>
           </div>
