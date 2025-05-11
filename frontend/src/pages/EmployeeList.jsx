@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "./EmployeeList.css";
 
 const EmployeeList = () => {
   const [employees, setEmployees] = useState([]);
+  const navigate = useNavigate();
 
-  // 仮のAPIまたはデータ
   useEffect(() => {
-    // ここは実際にはfetchなどでAPIから取得する想定
     const mockEmployees = [
       { id: 1, name: "田中 太郎" },
       { id: 2, name: "佐藤 花子" },
@@ -15,15 +16,19 @@ const EmployeeList = () => {
   }, []);
 
   return (
-    <div className="p-4">
-      <h1 className="text-xl font-bold mb-4">従業員一覧</h1>
-      <ul className="space-y-2">
+    <div className="employee-list-container">
+      <h1 className="employee-list-title">従業員一覧</h1>
+      <div className="employee-card-grid">
         {employees.map((employee) => (
-          <li key={employee.id} className="border p-2 rounded shadow">
-            {employee.name}
-          </li>
+          <div
+            key={employee.id}
+            className="employee-card"
+            onClick={() => navigate(`/employees/${employee.id}`)}
+          >
+            <h2 className="employee-name">{employee.name}</h2>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 };
