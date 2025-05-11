@@ -15,7 +15,7 @@ import SalaryCalc from "./pages/SalaryCalc";
 import NotFound from "./pages/NotFound";
 import EmployeeList from "./pages/EmployeeList";
 import EmployeeDetail from "./pages/EmployeeDetail";
-import EmployeeEdit from "./EmployeeEdit";
+import EmployeeEdit from "./pages/EmployeeEdit";
 
 function App() {
   return (
