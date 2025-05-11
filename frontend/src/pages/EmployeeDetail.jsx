@@ -21,6 +21,9 @@ const EmployeeDetail = () => {
       <h1 className="employee-detail-name">{employee.name}</h1>
       <p className="employee-detail-info">部署: {employee.department}</p>
       <p className="employee-detail-info">年齢: {employee.age}歳</p>
+      <button className="employee-edit-button" onClick={handleEditClick}>
+        修正
+      </button>
     </div>
   );
 };
