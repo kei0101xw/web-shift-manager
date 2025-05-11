@@ -8,9 +8,33 @@ const EmployeeDeleteConfirm = () => {
   const [deleted, setDeleted] = useState(false); // ← 削除済みフラグ
 
   const mockEmployee = {
-    1: { name: "田中 太郎", department: "営業部", age: 30 },
-    2: { name: "佐藤 花子", department: "経理部", age: 28 },
-    3: { name: "鈴木 一郎", department: "開発部", age: 35 },
+    1: {
+      name: "田中 太郎",
+      email: "ttt@icloud.com",
+      employeeId: "123456",
+      employmentPeliod: "13ヶ月",
+      workErea: "キッチン",
+      workingHours: 30,
+      role: "アルバイト",
+    },
+    2: {
+      name: "田中 進次郎",
+      email: "ppap@icloud.com",
+      employeeId: "133336",
+      employmentPeliod: "22ヶ月",
+      workErea: "キッチン",
+      workingHours: 150,
+      role: "社員",
+    },
+    3: {
+      name: "鈴木 一郎",
+      email: "pasd@icloud.com",
+      employeeId: "333336",
+      employmentPeliod: "33ヶ月",
+      workErea: "ホール",
+      workingHours: 10,
+      role: "パート",
+    },
   };
 
   const employee = mockEmployee[Number(id)];
