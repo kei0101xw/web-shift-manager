@@ -14,7 +14,7 @@ import ShiftEdit from "./pages/ShiftEdit";
 import SalaryCalc from "./pages/SalaryCalc";
 import NotFound from "./pages/NotFound";
 import EmployeeList from "./pages/EmployeeList";
-import EmployeeDetail from "./EmployeeDetail";
+import EmployeeDetail from "./pages/EmployeeDetail";
 
 function App() {
   return (
