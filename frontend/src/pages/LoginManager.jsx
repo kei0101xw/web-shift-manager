@@ -47,7 +47,7 @@ export default function LoginFormManager() {
       <div className="login-em-container">
         <div className="login-le-container">
           <form onSubmit={handleSubmit} className="login-form__input">
-            <h2 className=".login-employee-title">ログイン(管理者)</h2>
+            <h1 className=".login-employee-title">ログイン(管理者)</h1>
 
             {/* メールアドレス / 従業員番号 */}
             <input

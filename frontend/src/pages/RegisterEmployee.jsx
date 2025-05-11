@@ -1,19 +1,19 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom"; // 追加
+import { useNavigate, useLocation } from "react-router-dom";
 import "./RegisterEmployee.css";
 import Header from "../components/Header";
 
 const RegisterEmployee = () => {
-  const navigate = useNavigate(); // 追加
+  const navigate = useNavigate();
   const location = useLocation();
 
   const [employee, setEmployee] = useState({
     employeeId: "",
     name: "",
     email: "",
-    role: "", // 雇用形態（アルバイト・社員・パート）
+    role: "",
     password: "",
-    ...(location.state || {}), // ← これで戻ってきたときの値を初期値にする
+    ...(location.state || {}), // ← 戻ってきたときの値を初期値にする
   });
 
   const [errors, setErrors] = useState({});
@@ -68,18 +68,14 @@ const RegisterEmployee = () => {
 
     if (!validate()) return;
 
-    navigate("/confirmemployee", { state: employee }); // 確認ページへ遷移
-    // console.log("登録データ:", employee);
-    // setSubmitted(true);
-
-    // TODO: ここでAPI送信処理などを行う
+    navigate("/confirmemployee", { state: employee });
   };
 
   return (
     <>
       <Header />
       <div className="register-container">
-        <h2>従業員登録</h2>
+        <h1>従業員登録</h1>
         <form onSubmit={handleSubmit} className="register-form">
           <label>従業員番号</label>
           <input

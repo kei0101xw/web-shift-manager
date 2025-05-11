@@ -27,8 +27,8 @@ function App() {
           <Route path="/loginmanager" element={<LoginManager />} />
           <Route path="/home" element={<Home />} />
           <Route path="/employeelist" element={<EmployeeList />} />
-          <Route path="/employees/:id" element={<EmployeeDetail />} />
-          <Route path="/employees/:id/edit" element={<EmployeeEdit />} />
+          <Route path="/employees/:employeeId/edit" element={<EmployeeEdit />} />
+          <Route path="/employees/:employeeId" element={<EmployeeDetail />} />
           <Route path="/registeremployee" element={<RegisterEmployee />} />
           <Route path="/confirmemployee" element={<ConfirmEmployee />} />
           <Route path="/myshift" element={<MyShift />} />
