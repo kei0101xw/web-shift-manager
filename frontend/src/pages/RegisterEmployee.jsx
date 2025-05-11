@@ -1,12 +1,19 @@
 import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom"; // 追加
 import "./RegisterEmployee.css";
 import Header from "../components/Header";
 
 const RegisterEmployee = () => {
+  const navigate = useNavigate(); // 追加
+  const location = useLocation();
+
   const [employee, setEmployee] = useState({
     employeeId: "",
     name: "",
+    email: "",
+    role: "", // 雇用形態（アルバイト・社員・パート）
     password: "",
+    ...(location.state || {}), // ← これで戻ってきたときの値を初期値にする
   });
 
   const [errors, setErrors] = useState({});
@@ -22,6 +29,7 @@ const RegisterEmployee = () => {
     const newErrors = {};
     const idRegex = /^[0-9]+$/;
     const nameRegex = /^[^\s]+ [^\s]+$/; // 半角スペースが1つ含まれる氏名
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!employee.employeeId) {
       newErrors.employeeId = "従業員番号を入力してください。";
@@ -34,6 +42,16 @@ const RegisterEmployee = () => {
     } else if (!nameRegex.test(employee.name)) {
       newErrors.name =
         "氏名は半角スペースで姓と名を区切ってください。（例: 山田 太郎）";
+    }
+
+    if (!employee.email) {
+      newErrors.email = "メールアドレスを入力してください。";
+    } else if (!emailRegex.test(employee.email)) {
+      newErrors.email = "正しいメールアドレス形式で入力してください。";
+    }
+
+    if (!employee.role) {
+      newErrors.role = "雇用形態を選択してください。";
     }
 
     if (!employee.password) {
@@ -50,8 +68,9 @@ const RegisterEmployee = () => {
 
     if (!validate()) return;
 
-    console.log("登録データ:", employee);
-    setSubmitted(true);
+    navigate("/confirmemployee", { state: employee }); // 確認ページへ遷移
+    // console.log("登録データ:", employee);
+    // setSubmitted(true);
 
     // TODO: ここでAPI送信処理などを行う
   };
@@ -83,6 +102,25 @@ const RegisterEmployee = () => {
             placeholder="例: 山田 太郎"
           />
           {errors.name && <p className="error-message">{errors.name}</p>}
+
+          <label>メールアドレス</label>
+          <input
+            type="email"
+            name="email"
+            value={employee.email}
+            onChange={handleChange}
+            placeholder="例: example@example.com"
+          />
+          {errors.email && <p className="error-message">{errors.email}</p>}
+
+          <label>雇用形態</label>
+          <select name="role" value={employee.role} onChange={handleChange}>
+            <option value="">選択してください</option>
+            <option value="社員">社員</option>
+            <option value="パート">パート</option>
+            <option value="アルバイト">アルバイト</option>
+          </select>
+          {errors.role && <p className="error-message">{errors.role}</p>}
 
           <label>パスワード</label>
           <input

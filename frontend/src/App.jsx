@@ -5,6 +5,7 @@ import LoginEmployee from "./pages/LoginEmployee";
 import LoginManager from "./pages/LoginManager";
 import Start from "./pages/Start";
 import RegisterEmployee from "./pages/RegisterEmployee";
+import ConfirmEmployee from "./pages/ConfirmEmployee";
 import MyShift from "./pages/MyShift";
 import AllShift from "./pages/AllShift";
 import TodayShift from "./pages/TodayShift";
@@ -12,6 +13,8 @@ import ShiftApply from "./pages/ShiftApply";
 import ShiftEdit from "./pages/ShiftEdit";
 import SalaryCalc from "./pages/SalaryCalc";
 import NotFound from "./pages/NotFound";
+import EmployeeList from "./pages/EmployeeList";
+import EmployeeDetail from "./pages/EmployeeDetail";
 
 function App() {
   return (
@@ -22,7 +25,10 @@ function App() {
           <Route path="/loginemployee" element={<LoginEmployee />} />
           <Route path="/loginmanager" element={<LoginManager />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/employeelist" element={<EmployeeList />} />
+          <Route path="/employees/:employeeId" element={<EmployeeDetail />} />
           <Route path="/registeremployee" element={<RegisterEmployee />} />
+          <Route path="/confirmemployee" element={<ConfirmEmployee />} />
           <Route path="/myshift" element={<MyShift />} />
           <Route path="/allshift" element={<AllShift />} />
           <Route path="/todayshift" element={<TodayShift />} />

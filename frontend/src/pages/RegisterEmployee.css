@@ -23,10 +23,11 @@
   font-size: 1rem;
   border-radius: 5px;
   border: 1px solid #ccc;
+  margin-bottom: 5px;
 }
 
 .register-form button {
-  margin-top: 20px;
+  margin-top: 100px;
   padding: 10px;
   font-size: 1rem;
   background-color: #01943c;
@@ -34,6 +35,27 @@
   border: none;
   border-radius: 5px;
   cursor: pointer;
+}
+
+/* セレクトボックス全体のスタイル */
+.register-form select {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  /* margin-top: 10px; */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  background-color: #fff;
+  color: #333;
+  /* text-align: left; */
+}
+
+/* フォーカス時の枠線 */
+.register-form select:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 4px rgba(0, 123, 255, 0.4);
 }
 
 .register-form button:hover {
