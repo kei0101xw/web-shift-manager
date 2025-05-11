@@ -46,7 +46,7 @@ export default function LoginFormEmployee() {
       <Header />
       <div className="login-em-container">
         <div className="login-le-container">
-          <form onSubmit={handleSubmit} className="login-form__input">
+          <form onSubmit={handleSubmit} className="login-form-input">
             <h2 className=".login-employee-title">ログイン(従業員)</h2>
 
             {/* メールアドレス / 従業員番号 */}
@@ -55,13 +55,13 @@ export default function LoginFormEmployee() {
               type="text"
               value={emailOrId}
               onChange={(e) => setEmailOrId(e.target.value)}
-              className={`login-form__input__email ${
-                errors.emailOrId ? "login-form__input_email--error" : ""
+              className={`login-form-input-email ${
+                errors.emailOrId ? "login-form-input-email-error" : ""
               }`}
               placeholder="メールアドレスまたは従業員番号"
             />
             {errors.emailOrId && (
-              <p className="login-form__error">{errors.emailOrId}</p>
+              <p className="login-form-error">{errors.emailOrId}</p>
             )}
 
             {/* パスワード */}
@@ -71,24 +71,24 @@ export default function LoginFormEmployee() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={`login-form__input__pass ${
-                errors.password ? "login-form__input_pass--error" : ""
+              className={`login-form-input-pass ${
+                errors.password ? "login-form-input-pass-error" : ""
               }`}
               placeholder="パスワード"
             />
             {errors.password && (
-              <p className="login-form__error">{errors.password}</p>
+              <p className="login-form-error">{errors.password}</p>
             )}
 
             {/* パスワードを忘れた方はこちら */}
-            <div className="login-form__forgot-wrapper">
-              <a href="/forgot-password" className="login-form__forgot-link">
+            <div className="login-form-forgot-wrapper">
+              <a href="/forgot-password" className="login-form-forgot-link">
                 パスワードを忘れた方はこちら
               </a>
             </div>
 
             {/* ログインボタン */}
-            <button type="submit" className="login-form__submit-button">
+            <button type="submit" className="login-form-submit-button">
               ログイン
             </button>
 
@@ -96,7 +96,7 @@ export default function LoginFormEmployee() {
             <button
               type="button"
               onClick={() => (window.location.href = "/admin-login")}
-              className="login-form__admin-button"
+              className="login-form-admin-button"
             >
               管理者の方はこちら ＞
             </button>
