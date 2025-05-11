@@ -1,0 +1,35 @@
+.employee-detail-container {
+  padding: 24px;
+}
+
+.employee-detail-name {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.employee-detail-info {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.employee-detail-notfound {
+  padding: 24px;
+  color: red;
+}
+
+.employee-edit-button {
+  margin-top: 20px;
+  padding: 8px 16px;
+  background-color: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.employee-edit-button:hover {
+  background-color: #1565c0;
+}
