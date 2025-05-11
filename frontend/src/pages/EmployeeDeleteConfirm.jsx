@@ -25,7 +25,7 @@ const EmployeeDeleteConfirm = () => {
   };
 
   const handleOk = () => {
-    navigate("/");
+    navigate("/home");
   };
 
   if (!employee) {
