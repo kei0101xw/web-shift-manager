@@ -16,7 +16,7 @@ import NotFound from "./pages/NotFound";
 import EmployeeList from "./pages/EmployeeList";
 import EmployeeDetail from "./pages/EmployeeDetail";
 import EmployeeEdit from "./pages/EmployeeEdit";
-import EmployeeDeleteConfirm from "./EmployeeDeleteConfirm";
+import EmployeeDeleteConfirm from "./pages/EmployeeDeleteConfirm";
 
 function App() {
   return (
