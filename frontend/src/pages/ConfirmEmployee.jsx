@@ -36,7 +36,7 @@ const ConfirmEmployee = () => {
         <p className="confirm-note">
           以下の内容で新たに従業員を登録します。
           <br />
-          確認をお願いします。
+          入力内容を確認して下さい。
         </p>
         <ul>
           <li>
