@@ -1,0 +1,67 @@
+.employee-edit-container {
+  padding: 24px;
+}
+
+.employee-edit-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.employee-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 400px;
+}
+
+.employee-edit-label {
+  display: flex;
+  flex-direction: column;
+  font-size: 16px;
+}
+
+.employee-edit-input {
+  padding: 8px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  margin-top: 4px;
+}
+
+.employee-edit-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.employee-save-button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.employee-save-button:hover {
+  background-color: #43a047;
+}
+
+.employee-delete-button {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.employee-delete-button:hover {
+  background-color: #e53935;
+}
+
+.employee-edit-notfound {
+  color: red;
+  padding: 24px;
+}

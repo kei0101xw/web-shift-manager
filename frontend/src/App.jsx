@@ -15,6 +15,7 @@ import SalaryCalc from "./pages/SalaryCalc";
 import NotFound from "./pages/NotFound";
 import EmployeeList from "./pages/EmployeeList";
 import EmployeeDetail from "./pages/EmployeeDetail";
+import EmployeeEdit from "./pages/EmployeeEdit";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="/loginmanager" element={<LoginManager />} />
           <Route path="/home" element={<Home />} />
           <Route path="/employeelist" element={<EmployeeList />} />
+          <Route path="/employees/:employeeId/edit" element={<EmployeeEdit />} />
           <Route path="/employees/:employeeId" element={<EmployeeDetail />} />
           <Route path="/registeremployee" element={<RegisterEmployee />} />
           <Route path="/confirmemployee" element={<ConfirmEmployee />} />
