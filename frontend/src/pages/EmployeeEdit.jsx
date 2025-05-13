@@ -35,7 +35,9 @@ const EmployeeEdit = () => {
   const handleSave = () => {
     console.log("保存する従業員情報:", formData);
     // APIで保存する処理をここに追加予定
-    navigate(`/employees/${employee.employeeId}`);
+    navigate(`/employees/${employee.employeeId}`, {
+      state: { employee: formData },
+    });
   };
 
   const handleDelete = () => {
