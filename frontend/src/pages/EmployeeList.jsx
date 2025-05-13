@@ -50,7 +50,11 @@ const EmployeeList = () => {
           <div
             key={employee.employeeId}
             className="employee-card"
-            onClick={() => navigate(`/employees/${employee.employeeId}`)}
+            onClick={() =>
+              navigate(`/employees/${employee.employeeId}`, {
+                state: { employee },
+              })
+            }
           >
             <h2 className="employee-name">{employee.name}</h2>
           </div>
