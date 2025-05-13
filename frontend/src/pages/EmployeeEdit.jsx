@@ -43,7 +43,9 @@ const EmployeeEdit = () => {
   const handleDelete = () => {
     console.log(`従業員ID ${employee.employeeId} を削除しました`);
     // APIで削除処理をここに追加予定
-    navigate(`/employees/${employee.employeeId}/delete-confirm`);
+    navigate(`/employees/${employee.employeeId}/delete-confirm`, {
+      state: { employee: formData },
+    });
   };
 
   return (
