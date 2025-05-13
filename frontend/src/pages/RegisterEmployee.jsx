@@ -6,11 +6,15 @@ import Header from "../components/Header";
 const RegisterEmployee = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const today = new Date().toISOString().slice(0, 10);
 
   const [employee, setEmployee] = useState({
     employeeId: "",
     name: "",
     email: "",
+    employmentPeliod: today,
+    workErea: "",
+    workingHours: "",
     role: "",
     password: "",
     ...(location.state || {}), // ← 戻ってきたときの値を初期値にする
@@ -50,6 +54,14 @@ const RegisterEmployee = () => {
       newErrors.email = "正しいメールアドレス形式で入力してください。";
     }
 
+    if (!employee.workErea) {
+      newErrors.workErea = "担当を選択してください。";
+    }
+
+    if (!employee.workingHours) {
+      newErrors.workingHours = "勤務期間を入力してください。";
+    }
+
     if (!employee.role) {
       newErrors.role = "雇用形態を選択してください。";
     }
@@ -79,7 +91,7 @@ const RegisterEmployee = () => {
         <form onSubmit={handleSubmit} className="register-form">
           <label>従業員番号</label>
           <input
-            type="text"
+            type="number"
             name="employeeId"
             value={employee.employeeId}
             onChange={handleChange}
@@ -108,6 +120,33 @@ const RegisterEmployee = () => {
             placeholder="例: example@example.com"
           />
           {errors.email && <p className="error-message">{errors.email}</p>}
+
+          <label>担当</label>
+          <select
+            name="workErea"
+            value={employee.workErea}
+            onChange={handleChange}
+          >
+            <option value="">選択してください</option>
+            <option value="キッチン">キッチン</option>
+            <option value="ホール">ホール</option>
+            <option value="キッチン&ホール">キッチン&ホール</option>
+          </select>
+          {errors.workErea && (
+            <p className="error-message">{errors.workErea}</p>
+          )}
+
+          <label>最大可能勤務時間 [ h / 週 ]</label>
+          <input
+            type="number"
+            name="workingHours"
+            value={employee.workingHours}
+            onChange={handleChange}
+            placeholder="例: 28"
+          />
+          {errors.workingHours && (
+            <p className="error-message">{errors.workingHours}</p>
+          )}
 
           <label>雇用形態</label>
           <select name="role" value={employee.role} onChange={handleChange}>

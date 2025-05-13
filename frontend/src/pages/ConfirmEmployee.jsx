@@ -1,4 +1,3 @@
-// ConfirmEmployee.jsx
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
@@ -12,16 +11,22 @@ const ConfirmEmployee = () => {
     return <p>データがありません。</p>;
   }
 
-  const { employeeId, name, email, role, password } = state;
-
-  // const handleBack = () => {
-  //   navigate(-1); // 前のページへ戻る
-  // };
+  const {
+    employeeId,
+    name,
+    email,
+    employmentPeliod,
+    workErea,
+    workingHours,
+    role,
+    password,
+  } = state;
 
   const handleConfirm = () => {
     console.log("送信データ:", state);
     alert("登録を確定しました！");
     // TODO: API送信処理をここに書く
+    navigate("/home");
   };
 
   const handleEdit = () => {
@@ -50,6 +55,18 @@ const ConfirmEmployee = () => {
           <li>
             <strong>メールアドレス：</strong>
             {email}
+          </li>
+          <li>
+            <strong>出勤開始日：</strong>
+            {employmentPeliod}
+          </li>
+          <li>
+            <strong>担当：</strong>
+            {workErea}
+          </li>
+          <li>
+            <strong>最大可能勤務時間：</strong>
+            {workingHours}
           </li>
           <li>
             <strong>雇用形態：</strong>
