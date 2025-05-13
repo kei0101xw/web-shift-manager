@@ -60,6 +60,7 @@ const EmployeeEdit = () => {
             value={formData.name}
             onChange={handleChange}
             className="employee-edit-input"
+            disabled
           />
         </label>
         <label className="employee-edit-label">
@@ -91,6 +92,7 @@ const EmployeeEdit = () => {
             value={formData.employmentPeliod}
             onChange={handleChange}
             className="employee-edit-input"
+            disabled
           />
         </label>
         <label className="employee-edit-label">
@@ -119,16 +121,6 @@ const EmployeeEdit = () => {
             type="text"
             name="role"
             value={formData.role}
-            onChange={handleChange}
-            className="employee-edit-input"
-          />
-        </label>
-        <label className="employee-edit-label">
-          パスワード:
-          <input
-            type="text"
-            name="pass"
-            value={formData.pass}
             onChange={handleChange}
             className="employee-edit-input"
           />
