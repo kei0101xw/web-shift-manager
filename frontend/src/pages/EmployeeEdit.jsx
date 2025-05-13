@@ -1,21 +1,23 @@
 import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import "./EmployeeEdit.css";
 
 const EmployeeEdit = () => {
-  const { id } = useParams();
+  const location = useLocation();
+  const { employee } = location.state || {};
   const navigate = useNavigate();
 
-  const mockEmployee = {
-    1: { name: "田中 太郎", department: "営業部", age: 30 },
-    2: { name: "佐藤 花子", department: "経理部", age: 28 },
-    3: { name: "鈴木 一郎", department: "開発部", age: 35 },
-  };
-
-  const employee = mockEmployee[Number(id)];
-
   const [formData, setFormData] = useState(
-    employee || { name: "", department: "", age: "" }
+    employee || {
+      name: "",
+      email: "",
+      employeeId: "",
+      employmentPeliod: "",
+      workErea: "",
+      workingHours: 0,
+      role: "",
+      pass: "",
+    }
   );
 
   if (!employee) {
@@ -26,20 +28,20 @@ const EmployeeEdit = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: name === "workingHours" ? Number(value) : value,
     }));
   };
 
   const handleSave = () => {
     console.log("保存する従業員情報:", formData);
     // APIで保存する処理をここに追加予定
-    navigate(`/employees/${id}`);
+    navigate(`/employees/${employee.employeeId}`);
   };
 
   const handleDelete = () => {
-    console.log(`従業員ID ${id} を削除しました`);
+    console.log(`従業員ID ${employee.employeeId} を削除しました`);
     // APIで削除処理をここに追加予定
-    navigate(`/employees/${id}/delete-confirm`);
+    navigate(`/employees/${employee.employeeId}/delete-confirm`);
   };
 
   return (
@@ -47,7 +49,7 @@ const EmployeeEdit = () => {
       <h1 className="employee-edit-title">従業員情報の修正</h1>
       <form className="employee-edit-form" onSubmit={(e) => e.preventDefault()}>
         <label className="employee-edit-label">
-          名前:
+          氏名:
           <input
             type="text"
             name="name"
@@ -57,25 +59,77 @@ const EmployeeEdit = () => {
           />
         </label>
         <label className="employee-edit-label">
-          部署:
+          メールアドレス:
           <input
-            type="text"
-            name="department"
-            value={formData.department}
+            type="email"
+            name="email"
+            value={formData.email}
             onChange={handleChange}
             className="employee-edit-input"
           />
         </label>
         <label className="employee-edit-label">
-          年齢:
+          従業員番号:
           <input
-            type="number"
-            name="age"
-            value={formData.age}
+            type="text"
+            name="employeeId"
+            value={formData.employeeId}
+            onChange={handleChange}
+            className="employee-edit-input"
+            disabled // IDは変更不可にしておくと安全
+          />
+        </label>
+        <label className="employee-edit-label">
+          勤務期間:
+          <input
+            type="text"
+            name="employmentPeliod"
+            value={formData.employmentPeliod}
             onChange={handleChange}
             className="employee-edit-input"
           />
         </label>
+        <label className="employee-edit-label">
+          担当:
+          <input
+            type="text"
+            name="workErea"
+            value={formData.workErea}
+            onChange={handleChange}
+            className="employee-edit-input"
+          />
+        </label>
+        <label className="employee-edit-label">
+          勤務時間（週）:
+          <input
+            type="number"
+            name="workingHours"
+            value={formData.workingHours}
+            onChange={handleChange}
+            className="employee-edit-input"
+          />
+        </label>
+        <label className="employee-edit-label">
+          役職:
+          <input
+            type="text"
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
+            className="employee-edit-input"
+          />
+        </label>
+        <label className="employee-edit-label">
+          パスワード:
+          <input
+            type="text"
+            name="pass"
+            value={formData.pass}
+            onChange={handleChange}
+            className="employee-edit-input"
+          />
+        </label>
+
         <div className="employee-edit-buttons">
           <button
             type="button"
