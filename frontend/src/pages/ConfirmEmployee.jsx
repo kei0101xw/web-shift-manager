@@ -1,6 +1,5 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import Header from "../components/Header";
 import "./ConfirmEmployee.css";
 
 const ConfirmEmployee = () => {
@@ -35,7 +34,6 @@ const ConfirmEmployee = () => {
 
   return (
     <>
-      <Header />
       <div className="confirm-container">
         <h2>登録内容確認</h2>
         <p className="confirm-note">

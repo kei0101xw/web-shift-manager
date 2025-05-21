@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import "./EmployeeEdit.css";
-import Header from "../components/Header";
 
 const EmployeeEdit = () => {
   const location = useLocation();
@@ -51,7 +50,6 @@ const EmployeeEdit = () => {
 
   return (
     <>
-      <Header />
       <div className="employee-edit-container">
         <h1 className="employee-edit-title">従業員情報の修正</h1>
         <form

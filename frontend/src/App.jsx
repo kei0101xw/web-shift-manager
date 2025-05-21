@@ -17,10 +17,12 @@ import EmployeeList from "./pages/EmployeeList";
 import EmployeeDetail from "./pages/EmployeeDetail";
 import EmployeeEdit from "./pages/EmployeeEdit";
 import EmployeeDeleteConfirm from "./pages/EmployeeDeleteConfirm";
+import Header from "./components/Header";
 
 function App() {
   return (
-    <BrowserRouter>
+    <>
+      <Header />
       <div>
         <Routes>
           <Route path="/" element={<Start />} />
@@ -28,8 +30,14 @@ function App() {
           <Route path="/loginmanager" element={<LoginManager />} />
           <Route path="/home" element={<Home />} />
           <Route path="/employeelist" element={<EmployeeList />} />
-          <Route path="/employees/:employeeId/delete-confirm" element={<EmployeeDeleteConfirm />} />
-          <Route path="/employees/:employeeId/edit" element={<EmployeeEdit />} />
+          <Route
+            path="/employees/:employeeId/delete-confirm"
+            element={<EmployeeDeleteConfirm />}
+          />
+          <Route
+            path="/employees/:employeeId/edit"
+            element={<EmployeeEdit />}
+          />
           <Route path="/employees/:employeeId" element={<EmployeeDetail />} />
           <Route path="/registeremployee" element={<RegisterEmployee />} />
           <Route path="/confirmemployee" element={<ConfirmEmployee />} />
@@ -42,7 +50,7 @@ function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
-    </BrowserRouter>
+    </>
   );
 }
 

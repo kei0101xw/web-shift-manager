@@ -1,7 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./Home.css";
-import Header from "../components/Header";
 import calendar from "../assets/calendar.png";
 import human from "../assets/human.png";
 import people from "../assets/people.png";
@@ -13,7 +12,6 @@ const Home = () => {
   const navigate = useNavigate();
   return (
     <>
-      <Header />
       <div className="home-container">
         <div>Welcome back, Tomohiro Furuta</div>
         <div className="all-button-group">

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import "./LoginEmployee.css"; // CSSのインポート
-import Header from "../components/Header";
+import "./LoginEmployee.css";
 
 export default function LoginFormManager() {
   const [emailOrId, setEmailOrId] = useState("");
@@ -43,7 +42,6 @@ export default function LoginFormManager() {
 
   return (
     <>
-      <Header />
       <div className="login-em-container">
         <div className="login-le-container">
           <form onSubmit={handleSubmit} className="login-form__input">
