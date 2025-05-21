@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./Header.css";
 import logo from "../assets/logo_trans.png"; // 相対パスでインポート
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
