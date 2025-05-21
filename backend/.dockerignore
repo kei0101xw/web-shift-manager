@@ -11,3 +11,7 @@ node_modules
 .DS_Store
 .vscode
 .idea
+
+#Git関連ファイル
+.git
+.gitignore
