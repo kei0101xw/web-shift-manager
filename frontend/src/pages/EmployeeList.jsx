@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./EmployeeList.css";
-import Header from "../components/Header";
 
 const EmployeeList = () => {
   const [employees, setEmployees] = useState([]);
@@ -45,7 +44,6 @@ const EmployeeList = () => {
 
   return (
     <>
-      <Header />
       <div className="employee-list-container">
         <h1 className="employee-list-title">従業員一覧</h1>
         <div className="employee-card-grid">

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./RegisterEmployee.css";
-import Header from "../components/Header";
 
 const RegisterEmployee = () => {
   const navigate = useNavigate();
@@ -85,7 +84,6 @@ const RegisterEmployee = () => {
 
   return (
     <>
-      <Header />
       <div className="register-container">
         <h1>従業員登録</h1>
         <form onSubmit={handleSubmit} className="register-form">

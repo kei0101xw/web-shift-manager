@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import "./EmployeeDeleteConfirm.css";
-import Header from "../components/Header";
 
 const EmployeeDeleteConfirm = () => {
   const { employeeId } = useParams();
@@ -33,7 +32,6 @@ const EmployeeDeleteConfirm = () => {
 
   return (
     <>
-      <Header />
       <div className="employee-delete-container">
         {!deleted ? (
           <>

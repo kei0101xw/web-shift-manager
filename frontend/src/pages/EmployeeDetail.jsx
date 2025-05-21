@@ -1,7 +1,6 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./EmployeeDetail.css";
-import Header from "../components/Header";
 
 const EmployeeDetail = () => {
   const location = useLocation();
@@ -20,7 +19,6 @@ const EmployeeDetail = () => {
 
   return (
     <>
-      <Header />
       <div className="employee-detail-container">
         <h1 className="employee-detail-name">{employee.name}</h1>
         <p className="employee-detail-info">メール: {employee.email}</p>
