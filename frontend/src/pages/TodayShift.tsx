@@ -1,6 +1,6 @@
 import React from "react";
 
-const TodayShift = () => {
+const TodayShift = (): JSX.Element => {
   return (
     <>
       <div>todayshift</div>

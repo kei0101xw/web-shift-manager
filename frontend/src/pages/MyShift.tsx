@@ -1,6 +1,6 @@
 import React from "react";
 
-const MyShift = () => {
+const MyShift = (): JSX.Element => {
   return (
     <>
       <div>myshift</div>

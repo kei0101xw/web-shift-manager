@@ -1,35 +1,53 @@
-import React, { useState } from "react";
+import React, { useState, ChangeEvent, FormEvent } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./RegisterEmployee.css";
 
-const RegisterEmployee = () => {
+type Employee = {
+  employeeId: string;
+  name: string;
+  email: string;
+  employmentPeriod: string;
+  workErea: string;
+  workingHours: string;
+  role: string;
+  password: string;
+};
+
+type Errors = {
+  [key in keyof Employee]?: string;
+};
+
+const RegisterEmployee = (): JSX.Element => {
   const navigate = useNavigate();
   const location = useLocation();
+  const state = location.state as Partial<Employee> | null;
   const today = new Date().toISOString().slice(0, 10);
 
-  const [employee, setEmployee] = useState({
+  const [employee, setEmployee] = useState<Employee>({
     employeeId: "",
     name: "",
     email: "",
-    employmentPeliod: today,
+    employmentPeriod: today,
     workErea: "",
     workingHours: "",
     role: "",
     password: "",
-    ...(location.state || {}), // ← 戻ってきたときの値を初期値にする
+    ...state,
   });
 
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<Errors>({});
   const [submitted, setSubmitted] = useState(false);
 
-  const handleChange = (e) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setEmployee((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: "" })); // 入力中のエラーはクリア
   };
 
-  const validate = () => {
-    const newErrors = {};
+  const validate = (): boolean => {
+    const newErrors: Errors = {};
     const idRegex = /^[0-9]+$/;
     const nameRegex = /^[^\s]+ [^\s]+$/; // 半角スペースが1つ含まれる氏名
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -73,12 +91,11 @@ const RegisterEmployee = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setSubmitted(false);
-
     if (!validate()) return;
-
+    setSubmitted(true);
     navigate("/confirmemployee", { state: employee });
   };
 
