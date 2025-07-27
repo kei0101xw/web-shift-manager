@@ -1,6 +1,6 @@
 import React from "react";
 
-const ShiftApply = () => {
+const ShiftApply = (): JSX.Element => {
   return (
     <>
       <div>shiftapply</div>

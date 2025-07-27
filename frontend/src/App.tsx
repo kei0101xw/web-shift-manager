@@ -19,7 +19,7 @@ import EmployeeEdit from "./pages/EmployeeEdit";
 import EmployeeDeleteConfirm from "./pages/EmployeeDeleteConfirm";
 import Header from "./components/Header";
 
-function App() {
+function App(): JSX.Element {
   return (
     <>
       <Header />

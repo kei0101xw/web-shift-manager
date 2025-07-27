@@ -1,6 +1,6 @@
 import React from "react";
 
-const AllShift = () => {
+const AllShift: React.FC = () => {
   return (
     <>
       <div>allshift</div>

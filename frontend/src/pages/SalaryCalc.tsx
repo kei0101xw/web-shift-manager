@@ -1,6 +1,6 @@
 import React from "react";
 
-const SalaryCalc = () => {
+const SalaryCalc = (): JSX.Element => {
   return (
     <>
       <div>salarycalc</div>

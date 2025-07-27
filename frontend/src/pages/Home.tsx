@@ -8,7 +8,7 @@ import money from "../assets/money.png";
 import paper from "../assets/paper.png";
 import eraser from "../assets/eraser.png";
 
-const Home = () => {
+const Home: React.FC = () => {
   const navigate = useNavigate();
   return (
     <>

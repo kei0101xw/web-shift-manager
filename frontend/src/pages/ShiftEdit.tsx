@@ -1,6 +1,6 @@
 import React from "react";
 
-const ShiftEdit = () => {
+const ShiftEdit = (): JSX.Element => {
   return (
     <>
       <div>shiftedit</div>

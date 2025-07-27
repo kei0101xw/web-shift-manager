@@ -2,7 +2,7 @@ import React from "react";
 import logo from "../assets/logo.png";
 import "./Start.css";
 
-const Start = () => {
+const Start = (): JSX.Element => {
   return (
     <div className="start-container">
       <h1>シジャン博多一番街店</h1>
