@@ -18,6 +18,7 @@ import EmployeeDetail from "./pages/EmployeeDetail";
 import EmployeeEdit from "./pages/EmployeeEdit";
 import EmployeeDeleteConfirm from "./pages/EmployeeDeleteConfirm";
 import Header from "./components/Header";
+import ManagerHome from "./pages/ManagerHome";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
           <Route path="/loginemployee" element={<LoginEmployee />} />
           <Route path="/loginmanager" element={<LoginManager />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/managerhome" element={<ManagerHome />} />
           <Route path="/employeelist" element={<EmployeeList />} />
           <Route
             path="/employees/:employeeId/delete-confirm"
