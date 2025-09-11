@@ -1,0 +1,172 @@
+:root {
+  --green: #2ea62e;
+  --text: #111;
+  --muted: #777;
+  --pill-bg: #e9e9e9;
+  --circle-bg: #e5e7eb;
+}
+
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Hiragino Kaku Gothic ProN",
+    "Noto Sans JP", sans-serif;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+/* コンテナ */
+.salary-calc {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+  color: var(--text);
+}
+
+/* 見出し */
+.salary-calc__month {
+  text-align: center;
+  font-size: 32px;
+  font-weight: 700;
+  margin: 8px 0 20px;
+}
+
+/* 上部ラッパー（目標 & 戻るボタンを横並び） */
+.salary-calc__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+/* 月間目標 */
+.salary-calc__goal-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--pill-bg);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-weight: 600;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.08) inset;
+}
+.salary-calc__goal-label {
+  margin: 0;
+}
+.salary-calc__goal-value {
+  color: var(--green);
+}
+
+/* 戻るボタン */
+.salary-calc__back-wrapper {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+.salary-calc__back-square {
+  width: 60px;
+  height: 36px;
+  background: var(--green);
+  border: none;
+  border-radius: 4px;
+}
+.salary-calc__back-text {
+  color: var(--green);
+  font-size: 13px;
+}
+
+/* コメント */
+.salary-calc__comment {
+  text-align: center;
+  margin: 12px 0 16px;
+  font-weight: 500;
+}
+
+/* ナビゲーション（矢印＋円） */
+.salary-calc__navigation {
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  align-items: center;
+  margin: 8px 0 16px;
+}
+.salary-calc__nav-arrow {
+  font-size: 28px;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  line-height: 1;
+}
+
+/* 円グラフ */
+.salary-calc__summary {
+  --progress: 0; /* JSXから 0〜1 を渡す */
+  --angle: calc(var(--progress) * 360deg);
+  position: relative;
+  width: 180px;
+  height: 180px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: conic-gradient(var(--green) var(--angle), var(--circle-bg) 0);
+  display: grid;
+  place-items: center;
+}
+.salary-calc__summary::before {
+  content: "";
+  position: absolute;
+  width: 72%;
+  height: 72%;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+.salary-calc__summary-label,
+.salary-calc__summary-value {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+.salary-calc__summary-label {
+  font-size: 14px;
+  color: var(--muted);
+}
+.salary-calc__summary-value {
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+/* 下部（勤務時間・給料見込み） */
+.salary-calc__details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0 40px;
+}
+.salary-calc__detail {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+.salary-calc__detail-label {
+  color: var(--muted);
+  font-size: 14px;
+}
+.salary-calc__detail-value {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* スマホ小画面対応 */
+@media (max-width: 360px) {
+  .salary-calc__month {
+    font-size: 28px;
+  }
+  .salary-calc__summary {
+    width: 160px;
+    height: 160px;
+  }
+}
