@@ -47,7 +47,7 @@
   gap: 12px;
   margin: 12px 0 16px;
   text-align: center;
-  margin-bottom: 50px;
+  margin-bottom: 30px;
 }
 
 .shift-header .shift-title {
@@ -99,12 +99,12 @@
 .shift-button--left {
   border-right: 1px solid #e5e7eb;
   width: 200px;
-  height: 100px;
+  height: 70px;
   border-radius: 10px 0 0 10px;
 }
 .shift-button--right {
   width: 200px;
-  height: 100px;
+  height: 70px;
   border-radius: 0 10px 10px 0;
 }
 
