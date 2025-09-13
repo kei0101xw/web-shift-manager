@@ -112,22 +112,23 @@ const TodayShift = () => {
         {filtered.map((s) => (
           <div className="shift-card" key={s.id}>
             <div className="shift-card__header">
-              <span className="shift-card__name">{s.name}</span>
-            </div>
+              <div className="shift-info">
+                <span className="shift-card__name">{s.name}</span>
+                <div className="shift-card__time">
+                  <span>{s.start}</span> 〜 <span>{s.end}</span>
+                </div>
+              </div>
 
-            <div className="shift-card__time">
-              <span>{s.start}</span> 〜 <span>{s.end}</span>
-            </div>
-
-            <div className="shift-card__bar-wrap">
-              <div className="shift-card__bar-bg" />
-              {/* ★ 変更：色は共通クラス+CSS変数で制御 */}
-              <div
-                className="shift-card__bar shift-card__bar--accent"
-                style={calcBarStyle(s.start, s.end)}
-                aria-label={`${s.name}の勤務時間 ${s.start}〜${s.end}`}
-                role="img"
-              />
+              <div className="shift-card__bar-wrap">
+                <div className="shift-card__bar-bg" />
+                {/* ★ 変更：色は共通クラス+CSS変数で制御 */}
+                <div
+                  className="shift-card__bar shift-card__bar--accent"
+                  style={calcBarStyle(s.start, s.end)}
+                  aria-label={`${s.name}の勤務時間 ${s.start}〜${s.end}`}
+                  role="img"
+                />
+              </div>
             </div>
           </div>
         ))}

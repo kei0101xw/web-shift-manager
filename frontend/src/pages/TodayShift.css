@@ -177,6 +177,20 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  /* margin-right: 20px; */
+}
+
+.shift-info {
+  /* display: flex; */
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px; /* 既存 */
+  margin-right: 30px;
+}
+
+.shift-card__name__time {
+  flex: 0 0 200px; /* ← 幅を確保（例：200px）。可変にしたいなら min-width に変更でもOK */
+  min-width: 160px; /* 安全側に最低幅 */
 }
 
 .shift-card__name {
@@ -202,19 +216,24 @@
 
 /* ===== バー表示（カード内タイムライン） ===== */
 .shift-card__bar-wrap {
+  flex: 1; /* ← これが重要！横幅を取ってくれる */
+  min-width: 0; /* 収まりきらない時に縮められるように */
   position: relative;
   height: 14px;
-  margin-top: 8px;
+  margin-top: 0; /* 2ブロック内なので余白は0でOK（好みで調整） */
 }
 
 .shift-card__bar-bg {
+  position: absolute; /* ← これを付ける */
+  inset: 0; /* ← これで親いっぱいに */
+  border-radius: 9999px;
   background: linear-gradient(var(--bar-bg), var(--bar-bg)) padding-box,
     repeating-linear-gradient(
       to right,
       var(--tick) 0,
       var(--tick) 1px,
       transparent 1px,
-      transparent calc(100% / var(--segments, 7)) /* ← ここを変更 */
+      transparent calc(100% / var(--segments, 7))
     );
 }
 
