@@ -1,0 +1,243 @@
+:root {
+  --sa-border: #e5e7eb; /* gray-200 */
+  --sa-muted: #6b7280; /* gray-500 */
+  --sa-bg: #ffffff;
+  --sa-card-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  --sa-primary: #10b981; /* emerald-500 */
+  --sa-primary-weak: #ecfdf5; /* emerald-50 */
+  --sa-accent: #2563eb; /* blue-600 */
+}
+
+/* ===== Base Layout ===== */
+.shift-apply__container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.shift-apply__title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.shift-apply__layout {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 16px;
+  align-items: stretch;
+}
+
+/* ===== Cards ===== */
+.shift-apply__calendar-card,
+.shift-apply__defaults-card,
+.shift-apply__detail-card {
+  background: var(--sa-bg);
+  border: 1px solid var(--sa-border);
+  border-radius: 12px;
+  box-shadow: var(--sa-card-shadow);
+  padding: 16px;
+}
+
+/* ===== Calendar Header ===== */
+.shift-apply__calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.shift-apply__calendar-header > button {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--sa-border);
+  background: var(--sa-bg);
+  cursor: pointer;
+}
+.shift-apply__calendar-header > button:hover {
+  filter: brightness(0.97);
+}
+
+.shift-apply__calendar-title {
+  font-weight: 700;
+}
+
+/* ===== Week Labels ===== */
+.shift-apply__week-labels {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  text-align: center;
+  color: var(--sa-muted);
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+/* ===== Calendar Grid ===== */
+.shift-apply__calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.shift-apply__calendar-day {
+  padding: 10px;
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1px solid var(--sa-border);
+  background: var(--sa-bg);
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+.shift-apply__calendar-day:hover {
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+}
+.shift-apply__calendar-day:focus-visible {
+  outline: 2px solid var(--sa-accent);
+  outline-offset: 2px;
+}
+
+/* 今日バッジ */
+.shift-apply__calendar-day.today::after {
+  content: "今日";
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 10px;
+  color: var(--sa-accent);
+}
+
+/* 選択スタイル */
+.shift-apply__calendar-day.selected {
+  border: 2px solid var(--sa-primary);
+  background: var(--sa-primary-weak);
+}
+.shift-apply__calendar-day.selected::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+.shift-apply__calendar-day.selected::after {
+  content: "選択中";
+  position: absolute;
+  bottom: 6px;
+  right: 8px;
+  font-size: 10px;
+  color: var(--sa-primary);
+}
+
+/* ===== Defaults (bulk apply) ===== */
+.shift-apply__defaults-card h2 {
+  font-weight: 700;
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+
+.shift-apply__time-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: end;
+}
+
+.shift-apply__time-inputs label {
+  display: block;
+  font-size: 12px;
+  color: var(--sa-muted);
+  margin-bottom: 4px;
+}
+
+.shift-apply__time-inputs input[type="time"] {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--sa-border);
+}
+
+.shift-apply__defaults-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.shift-apply__defaults-buttons > button,
+.shift-apply__submit-row > button,
+.shift-apply__detail-grid button {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--sa-border);
+  background: var(--sa-bg);
+  cursor: pointer;
+}
+
+.shift-apply__defaults-buttons > button:first-child,
+.shift-apply__submit-row > button {
+  background: var(--sa-primary);
+  border-color: var(--sa-primary);
+  color: #fff;
+}
+
+.shift-apply__defaults-buttons > button:hover,
+.shift-apply__submit-row > button:hover,
+.shift-apply__detail-grid button:hover {
+  filter: brightness(0.97);
+}
+
+/* Submit row */
+.shift-apply__submit-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  color: var(--sa-muted);
+  font-size: 14px;
+}
+
+/* ===== Detail table ===== */
+.shift-apply__detail-card h2 {
+  font-weight: 700;
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+
+.shift-apply__detail-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.7fr 0.7fr 1fr 0.5fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.shift-apply__detail-grid > div:nth-child(-n + 5) {
+  font-size: 12px;
+  color: var(--sa-muted);
+}
+
+.shift-apply__detail-grid input[type="time"],
+.shift-apply__detail-grid input[type="text"] {
+  width: 100%;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid var(--sa-border);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 900px) {
+  .shift-apply__layout {
+    grid-template-columns: 1fr;
+  }
+  .shift-apply__detail-grid {
+    grid-template-columns: 1fr;
+  }
+  .shift-apply__detail-grid > div:nth-child(-n + 5) {
+    display: none; /* ヘッダ行は小画面では非表示 */
+  }
+  .shift-apply__detail-grid > * {
+    margin-bottom: 6px;
+  }
+}
