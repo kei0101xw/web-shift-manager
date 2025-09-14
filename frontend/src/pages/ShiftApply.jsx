@@ -47,7 +47,7 @@ export default function ShiftApply() {
   const [selected, setSelected] = useState({});
   const [defaults, setDefaults] = useState({ start: "09:00", end: "18:00" });
 
-  // --- ここがポイント：確認ページから戻って来たら state.payload を復元 ---
+  // 確認ページから戻って来たら state.payload を復元
   useEffect(() => {
     const payload = location.state && location.state.payload;
     if (payload && Array.isArray(payload) && payload.length) {
