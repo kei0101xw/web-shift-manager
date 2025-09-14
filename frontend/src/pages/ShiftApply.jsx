@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import "./ShiftApply.css";
 
 const WEEK_LABELS = ["日", "月", "火", "水", "木", "金", "土"];
@@ -6,33 +7,27 @@ const WEEK_LABELS = ["日", "月", "火", "水", "木", "金", "土"];
 function pad2(n) {
   return n.toString().padStart(2, "0");
 }
-
 function ymd(date) {
   const y = date.getFullYear();
   const m = pad2(date.getMonth() + 1);
   const d = pad2(date.getDate());
   return `${y}-${m}-${d}`;
 }
-
 function parseYmd(s) {
   const [y, m, d] = s.split("-").map(Number);
   return new Date(y, m - 1, d);
 }
-
 function daysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
 }
-
 function startOfMonth(year, month) {
   return new Date(year, month, 1);
 }
-
 function addMonths(date, delta) {
   const d = new Date(date);
   d.setMonth(d.getMonth() + delta);
   return d;
 }
-
 function isSameDay(a, b) {
   return (
     a.getFullYear() === b.getFullYear() &&
@@ -42,13 +37,31 @@ function isSameDay(a, b) {
 }
 
 export default function ShiftApply() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const today = useMemo(() => new Date(), []);
   const [viewDate, setViewDate] = useState(
     () => new Date(today.getFullYear(), today.getMonth(), 1)
   );
-
   const [selected, setSelected] = useState({});
   const [defaults, setDefaults] = useState({ start: "09:00", end: "18:00" });
+
+  // --- ここがポイント：確認ページから戻って来たら state.payload を復元 ---
+  useEffect(() => {
+    const payload = location.state && location.state.payload;
+    if (payload && Array.isArray(payload) && payload.length) {
+      const next = {};
+      for (const p of payload)
+        next[p.date] = { start: p.start, end: p.end, note: p.note || "" };
+      setSelected(next);
+      // ビュー月を最初の日付に合わせる（任意）
+      try {
+        const first = parseYmd(payload[0].date);
+        setViewDate(new Date(first.getFullYear(), first.getMonth(), 1));
+      } catch (_) {}
+    }
+  }, [location.state]);
 
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
@@ -64,17 +77,12 @@ export default function ShiftApply() {
     return cells;
   }, [firstWeekday, totalDays, year, month]);
 
-  const isSelected = (date) => !!selected[ymd(date)];
-
   const toggleDate = (date) => {
     const key = ymd(date);
     setSelected((prev) => {
       const next = { ...prev };
-      if (next[key]) {
-        delete next[key];
-      } else {
-        next[key] = { start: defaults.start, end: defaults.end, note: "" };
-      }
+      if (next[key]) delete next[key];
+      else next[key] = { start: defaults.start, end: defaults.end, note: "" };
       return next;
     });
   };
@@ -89,20 +97,17 @@ export default function ShiftApply() {
     });
   };
 
-  const setTimeFor = (key, field, value) => {
+  const setTimeFor = (key, field, value) =>
     setSelected((prev) => ({
       ...prev,
       [key]: { ...prev[key], [field]: value },
     }));
-  };
-
-  const removeDate = (key) => {
+  const removeDate = (key) =>
     setSelected((prev) => {
-      const next = { ...prev };
-      delete next[key];
-      return next;
+      const n = { ...prev };
+      delete n[key];
+      return n;
     });
-  };
 
   const validate = () => {
     const errs = [];
@@ -111,9 +116,7 @@ export default function ShiftApply() {
         errs.push(`${key}: 開始/終了のいずれかが未入力です`);
         continue;
       }
-      if (v.start >= v.end) {
-        errs.push(`${key}: 開始は終了より前にしてください`);
-      }
+      if (v.start >= v.end) errs.push(`${key}: 開始は終了より前にしてください`);
     }
     return errs;
   };
@@ -127,9 +130,7 @@ export default function ShiftApply() {
     const payload = Object.keys(selected)
       .sort()
       .map((key) => ({ date: key, ...selected[key] }));
-
-    console.log("[ShiftApply] payload", payload);
-    alert("シフト申請を受け付けました。コンソールに送信内容を出力しました。");
+    navigate("/shiftapplyconfirm", { state: { payload } });
   };
 
   return (
