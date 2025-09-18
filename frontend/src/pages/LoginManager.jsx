@@ -1,15 +1,13 @@
 import React, { useState } from "react";
-import "./LoginEmployee.css";
+import "./LoginManager.css";
 
-export default function LoginFormManager() {
+export default function LoginManager() {
   const [emailOrId, setEmailOrId] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
 
   const validate = () => {
     const newErrors = {};
-
-    // メールアドレスまたは従業員番号（数値）
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const idRegex = /^[0-9]+$/;
 
@@ -21,7 +19,6 @@ export default function LoginFormManager() {
         "有効なメールアドレスまたは従業員番号を入力してください。";
     }
 
-    // パスワード：4〜8桁
     if (!password) {
       newErrors.password = "パスワードを入力してください。";
     } else if (password.length < 4 || password.length > 8) {
@@ -35,72 +32,67 @@ export default function LoginFormManager() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validate()) return;
-
-    // バリデーションOK時の処理
     console.log("ログイン:", { emailOrId, password });
   };
 
   return (
-    <>
-      <div className="login-em-container">
-        <div className="login-le-container">
-          <form onSubmit={handleSubmit} className="login-form__input">
-            <h1 className=".login-employee-title">ログイン(管理者)</h1>
+    <div className="login-mn-container">
+      <div className="login-manager-container">
+        <form onSubmit={handleSubmit} className="login-form-input">
+          <h1 className="login-manager-title">ログイン(管理者)</h1>
 
-            {/* メールアドレス / 従業員番号 */}
-            <input
-              id="emailOrId"
-              type="text"
-              value={emailOrId}
-              onChange={(e) => setEmailOrId(e.target.value)}
-              className={`login-form__input__email ${
-                errors.emailOrId ? "login-form__input_email--error" : ""
-              }`}
-              placeholder="メールアドレスまたは従業員番号"
-            />
-            {errors.emailOrId && (
-              <p className="login-form__error">{errors.emailOrId}</p>
-            )}
+          {/* メールアドレス / 従業員番号 */}
+          <input
+            id="emailOrId"
+            type="text"
+            value={emailOrId}
+            onChange={(e) => setEmailOrId(e.target.value)}
+            className={`login-form-input-email ${
+              errors.emailOrId ? "login-form-input-mail-error" : ""
+            }`}
+            placeholder="メールアドレスまたは従業員番号"
+          />
+          {errors.emailOrId && (
+            <p className="login-form__error">{errors.emailOrId}</p>
+          )}
 
-            {/* パスワード */}
+          {/* パスワード */}
+          <input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={`login-form-input-pass ${
+              errors.password ? "login-form-input-pass-error" : ""
+            }`}
+            placeholder="パスワード"
+          />
+          {errors.password && (
+            <p className="login-form__error">{errors.password}</p>
+          )}
 
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className={`login-form__input__pass ${
-                errors.password ? "login-form__input_pass--error" : ""
-              }`}
-              placeholder="パスワード"
-            />
-            {errors.password && (
-              <p className="login-form__error">{errors.password}</p>
-            )}
+          {/* パスワードを忘れた方はこちら */}
+          <div className="login-form-forgot-wrapper">
+            <a href="/forgot-password" className="login-form-forgot-link">
+              パスワードを忘れた方はこちら
+            </a>
+          </div>
 
-            {/* パスワードを忘れた方はこちら */}
-            <div className="login-form__forgot-wrapper">
-              <a href="/forgot-password" className="login-form__forgot-link">
-                パスワードを忘れた方はこちら
-              </a>
-            </div>
+          {/* ログインボタン */}
+          <button type="submit" className="login-form-submit-button">
+            ログイン
+          </button>
 
-            {/* ログインボタン */}
-            <button type="submit" className="login-form__submit-button">
-              ログイン
-            </button>
-
-            {/* 管理者の方はこちら */}
-            <button
-              type="button"
-              onClick={() => (window.location.href = "/admin-login")}
-              className="login-form__admin-button"
-            >
-              従業員の方はこちら ＞
-            </button>
-          </form>
-        </div>
+          {/* 従業員の方はこちら */}
+          <button
+            type="button"
+            onClick={() => (window.location.href = "/employee-login")}
+            className="login-form__employee-button"
+          >
+            従業員の方はこちら ＞
+          </button>
+        </form>
       </div>
-    </>
+    </div>
   );
 }
