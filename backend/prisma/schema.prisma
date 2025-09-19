@@ -33,4 +33,5 @@ model Shift {
 
   @@index([userId, start])
   @@index([start, end])
+  @@unique([userId, start, end])
 }
