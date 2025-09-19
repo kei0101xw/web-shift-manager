@@ -12,4 +12,5 @@ COPY . .
 
 EXPOSE 8080
 
-CMD ["npx", "nodemon", "src/index.js"]
+# CMD ["npx", "nodemon", "src/index.js"]
+CMD ["npx", "nodemon", "src/server.js"]
