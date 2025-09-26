@@ -13,8 +13,11 @@ services:
     build: ./frontend
     ports:
       - 3000:3000
+    environment:
+      - VITE_API_BASE=http://localhost:8080
+      - CHOKIDAR_USEPOLLING=true
     volumes:
       - ./frontend:/app:cached
-      # - /app/node_modules
+      - /app/node_modules
     depends_on:
       - backend
