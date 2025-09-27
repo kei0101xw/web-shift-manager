@@ -1,12 +1,13 @@
-FROM node:18
+FROM node:22
 
 WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
 # 残りのソースコードをコピー（package.json側に変更がなかった場合、上２行のコマンドを飛ばして、このコマンドを実行する）
 COPY . .
+EXPOSE 3000
 
-CMD ["npm", "run", "dev"]
+CMD ["npm","run","dev","--","--host","0.0.0.0","--port","3000"]
