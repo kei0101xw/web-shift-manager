@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2020", // 出力するJSのバージョン
+    "module": "CommonJS", // Node.js は CommonJS が基本
+    "moduleResolution": "Node", // Node.jsのモジュール解決方式
+    "outDir": "dist", // ビルド後の出力先
+    "rootDir": "src", // ソースコードのルート
+    "strict": true, // 厳密な型チェックを有効化
+    "esModuleInterop": true, // import express from "express" を許可
+    "forceConsistentCasingInFileNames": true, // 大文字小文字の不一致をエラーに
+    "skipLibCheck": true // ライブラリの型チェックをスキップ（高速化）
+  },
+  "include": ["src"], // このフォルダ内を対象に
+  "exclude": ["node_modules", "dist"]
+}
