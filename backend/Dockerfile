@@ -1,11 +1,11 @@
 FROM node:18
-
 WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm ci
 
-COPY . .
+COPY tsconfig.json ./
+COPY src ./src
 
-CMD ["npx", "nodemon", "src/index.js"]
+CMD ["npm","run","dev"]

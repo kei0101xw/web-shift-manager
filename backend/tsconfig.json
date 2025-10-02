@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2020", // 出力するJSのバージョン
     "module": "CommonJS", // Node.js は CommonJS が基本
-    "moduleResolution": "Node", // Node.jsのモジュール解決方式
+    "moduleResolution": "node", // Node.jsのモジュール解決方式
     "outDir": "dist", // ビルド後の出力先
     "rootDir": "src", // ソースコードのルート
     "strict": true, // 厳密な型チェックを有効化
