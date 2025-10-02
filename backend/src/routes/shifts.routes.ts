@@ -1,24 +1,37 @@
 import { Router } from "express";
 import { z } from "zod";
 import { pool, withTx } from "../db/client";
-// import { sendPgError } from "../errors";
+import { sendPgError } from "../errors";
 
 export const shiftsRouter = Router();
 
-const CreateShiftSchema = z.object({
-  start_time: z.string().datetime(),
-  end_time: z.string().datetime(),
-  requirements: z
-    .array(
-      z.object({
-        role_id: z.number().int().positive(), //役職
-        capacity: z.number().int().min(1), //必要な人数
-      })
-    )
-    .default([]),
-});
+const isoTz = z.string().datetime({ offset: true });
+const CreateShiftSchema = z
+  .object({
+    start_time: isoTz,
+    end_time: isoTz,
+    requirements: z
+      .array(
+        z.object({
+          role_id: z.number().int().positive(), //役職
+          capacity: z.number().int().min(1), //必要な人数
+        })
+      )
+      .default([]),
+  })
+  .refine(
+    (v) => new Date(v.end_time).getTime() > new Date(v.start_time).getTime(),
+    { path: ["end_time"], message: "end_time must be greater than start_time" }
+  )
+  .refine(
+    (v) => {
+      const ids = v.requirements.map((r) => r.role_id);
+      return ids.length === new Set(ids).size;
+    },
+    { path: ["requirements"], message: "requirements.role_id must be unique" }
+  );
 
-shiftsRouter.post("/", async (req, res) => {
+shiftsRouter.post("/", async (req, res, next) => {
   try {
     const body = CreateShiftSchema.parse(req.body);
     const { start_time, end_time, requirements } = body;
@@ -28,8 +41,8 @@ shiftsRouter.post("/", async (req, res) => {
         rows: [shift],
       } = await c.query(
         `INSERT INTO shifts (start_time, end_time)
-         VALUES ($1,$2)
-         RETURNING id, start_time, end_time`,
+         values ($1::timestamptz, $2::timestamptz)
+         returning id, start_time, end_time`,
         [start_time, end_time]
       );
 
@@ -38,20 +51,23 @@ shiftsRouter.post("/", async (req, res) => {
         const values: string[] = [];
         requirements.forEach((r, i) => {
           params.push(shift.id, r.role_id, r.capacity);
-          values.push(
-            `($${params.length - 2},$${params.length - 1},$${params.length})`
-          );
+          const n = params.length;
+          values.push(`($${n - 2}, $${n - 1}, $${n})`);
         });
         await c.query(
           `INSERT INTO shift_requirements (shift_id, role_id, capacity)
            VALUES ${values.join(",")}
-           ON CONFLICT (shift_id, role_id) DO UPDATE SET capacity = EXCLUDED.capacity`,
+           on conflict (shift_id, role_id) do update
+              set capacity = excluded.capacity`,
           params
         );
       }
 
       const { rows: reqs } = await c.query(
-        `SELECT role_id, capacity FROM shift_requirements WHERE shift_id=$1 ORDER BY role_id`,
+        `select role_id, capacity
+           from shift_requirements
+          where shift_id = $1
+          order by role_id`,
         [shift.id]
       );
 
@@ -60,42 +76,81 @@ shiftsRouter.post("/", async (req, res) => {
 
     res.status(201).json(result);
   } catch (err) {
-    sendPgError(res, err);
+    next(err);
   }
+});
+
+const GetShiftsQuery = z.object({
+  from: z.string().datetime({ offset: true }).optional(),
+  to: z.string().datetime({ offset: true }).optional(),
+  role_id: z.coerce.number().int().optional(),
+  with_requirements: z.coerce.boolean().optional(), // "true"/"false" どちらでもOK
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(1000).default(100),
+  // role_filter_mode: "narrow" | "any" を将来足しても良い
 });
 
 shiftsRouter.get("/", async (req, res) => {
   try {
-    const { from, to, role_id, with_requirements } = req.query as any;
+    const q = GetShiftsQuery.parse(req.query);
+    const { from, to, role_id, with_requirements = true, page, limit } = q;
+
     const params: any[] = [];
     const wh: string[] = [];
+
     if (from) {
       params.push(from);
-      wh.push(`s.start_time >= $${params.length}`);
+      wh.push(`s.start_time >= $${params.length}::timestamptz`);
     }
     if (to) {
       params.push(to);
-      wh.push(`s.end_time   <= $${params.length}`);
+      wh.push(`s.end_time   <= $${params.length}::timestamptz`);
     }
+
+    // role_id の解釈：
+    //  A) そのロールの要件だけが欲しい → JOIN + WHERE sr.role_id = ?
+    //  B) そのロールが含まれるシフトを抽出しつつ「全要件」返す → EXISTS サブクエリ
+    // 下は **B案（おすすめ）**：UIで gaps を見たいとき便利
     if (role_id) {
-      params.push(Number(role_id));
-      wh.push(`sr.role_id = $${params.length}`);
+      params.push(role_id);
+      wh.push(
+        `exists (select 1 from shift_requirements x where x.shift_id = s.id and x.role_id = $${params.length})`
+      );
+    }
+
+    const offset = (page - 1) * limit;
+
+    if (!with_requirements) {
+      // 軽量版：シフトだけ
+      const sql = `
+        select s.id, s.start_time, s.end_time
+          from shifts s
+         ${wh.length ? "where " + wh.join(" and ") : ""}
+         order by s.start_time
+         limit ${limit} offset ${offset}
+      `;
+      const { rows } = await pool.query(sql, params);
+      return res.json(rows);
     }
 
     const sql = `
-      SELECT
+      select
         s.id, s.start_time, s.end_time,
-        COALESCE(
-          JSON_AGG(JSON_BUILD_OBJECT('role_id', sr.role_id, 'capacity', sr.capacity))
-          FILTER (WHERE sr.role_id IS NOT NULL),
+        coalesce(
+          json_agg(
+            json_build_object('role_id', sr.role_id, 'capacity', sr.capacity)
+            order by sr.role_id
+          )
+          filter (where sr.role_id is not null),
           '[]'
-        ) AS requirements
-      FROM shifts s
-      LEFT JOIN shift_requirements sr ON sr.shift_id = s.id
-      ${wh.length ? "WHERE " + wh.join(" AND ") : ""}
-      GROUP BY s.id
-      ORDER BY s.start_time
-      LIMIT 1000
+        ) as requirements
+      from shifts s
+      left join shift_requirements sr
+        on sr.shift_id = s.id
+      ${wh.length ? "where " + wh.join(" and ") : ""}
+      group by s.id, s.start_time, s.end_time
+      order by s.start_time
+      limit ${limit} offset ${offset}
     `;
     const { rows } = await pool.query(sql, params);
     res.json(rows);
