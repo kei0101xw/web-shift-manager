@@ -27,11 +27,15 @@ create table if not exists employees (
   created_at              timestamptz  not null default now(),
   updated_at              timestamptz  not null default now(),
   is_international_student boolean     not null default false,
-  weekly_hour_cap         smallint,
+  weekly_hour_cap          smallint     default 28,
   constraint employees_emp_type_chk check (employment_type in ('full_time','part_time','baito')),
   constraint employees_status_chk   check (status in ('active','inactive','suspended')),
   constraint employees_prof_chk     check (proficiency_level between 1 and 3),
-  constraint employees_weekcap_chk  check (weekly_hour_cap is null or weekly_hour_cap between 1 and 84)
+  -- 一般従業員: NULL OK / 値を入れるなら 1..84
+  constraint employees_weekcap_chk  check (weekly_hour_cap is null or weekly_hour_cap between 1 and 84),
+  -- 留学生: 必ず 1..28
+  constraint employees_international_cap_chk
+    check (not is_international_student or (weekly_hour_cap is not null and weekly_hour_cap between 1 and 28))
 );
 create index if not exists employees_status_idx     on employees(status);
 create index if not exists employees_hire_date_idx  on employees(hire_date);
@@ -65,7 +69,7 @@ create table if not exists shifts (
   updated_at timestamptz not null default now(),
   constraint shifts_time_chk check (end_time > start_time)
 );
-create index if not exists shifts_start_idx on shifts(start_time);
+create index if not exists idx_shifts_start_time on shifts(start_time);
 
 -- shift_requirements（複合PK）
 create table if not exists shift_requirements (
@@ -204,3 +208,4 @@ drop trigger if exists check_rolling_7d_cap on shift_assignments;
 create trigger check_rolling_7d_cap
 before insert on shift_assignments
 for each row execute function trg_check_rolling_7d_cap();
+
