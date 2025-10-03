@@ -1,4 +1,4 @@
-import { Routes, Route, BrowserRouter } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import "./App.css";
 import Home from "./pages/Home";
 import LoginEmployee from "./pages/LoginEmployee";
@@ -19,6 +19,7 @@ import EmployeeEdit from "./pages/EmployeeEdit";
 import EmployeeDeleteConfirm from "./pages/EmployeeDeleteConfirm";
 import Header from "./components/Header";
 import DeleteEmployee from "./pages/DeleteEmployee";
+import ShiftApplyConfirm from "./pages/ShiftApplyConfirm";
 
 function App() {
   return (
@@ -47,6 +48,7 @@ function App() {
           <Route path="/allshift" element={<AllShift />} />
           <Route path="/todayshift" element={<TodayShift />} />
           <Route path="/shiftapply" element={<ShiftApply />} />
+          <Route path="/shiftapplyconfirm" element={<ShiftApplyConfirm />} />
           <Route path="/shiftedit" element={<ShiftEdit />} />
           <Route path="/salarycalc" element={<SalaryCalc />} />
           <Route path="*" element={<NotFound />} />
