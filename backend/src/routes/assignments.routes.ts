@@ -231,7 +231,7 @@ assignmentsRouter.get("/", async (req, res, next) => {
       select
         sa.id, sa.shift_id, sa.employee_id, sa.role_id, sa.status,
         s.start_time, s.end_time,
-        extract(epoch from (s.end_time - s.start_time))/3600.0 as hours
+        round(extract(epoch from (s.end_time - s.start_time))/3600.0, 2)::float8 as hours
       from shift_assignments sa
       join shifts s on s.id = sa.shift_id
       ${wh.length ? "where " + wh.join(" and ") : ""}
