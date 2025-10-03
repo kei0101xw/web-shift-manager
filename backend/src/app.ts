@@ -5,6 +5,7 @@ import { employeesRouter } from "./routes/employees.routes";
 import { shiftsRouter } from "./routes/shifts.routes";
 import { assignmentsRouter } from "./routes/assignments.routes";
 import { availabilityRouter } from "./routes/availability.routes";
+import { gapsRouter } from "./routes/gaps.routes";
 import { errorHandler } from "./errors";
 
 const app = express();
@@ -20,6 +21,7 @@ app.use("/api/v1/employees", employeesRouter);
 app.use("/api/v1/shifts", shiftsRouter);
 app.use("/api/v1/assignments", assignmentsRouter);
 app.use("/api/v1/availability", availabilityRouter);
+app.use("/api/v1/gaps", gapsRouter);
 
 // エラーハンドラ
 app.use(errorHandler);
