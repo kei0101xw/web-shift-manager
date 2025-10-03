@@ -19,6 +19,10 @@ export function sendPgError(res: Response, err: any) {
     return res
       .status(409)
       .json({ error: "exclusion_violation", detail: err.detail });
+  if (err?.name === "Conflict")
+    return res
+      .status(409)
+      .json({ error: err.message || "conflict", meta: err.meta });
   if (err?.name === "BadRequest")
     return res.status(400).json({ error: err.message, meta: err.meta });
   return res.status(500).json({ error: "internal_error", detail: String(err) });
