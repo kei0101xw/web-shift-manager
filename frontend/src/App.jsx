@@ -18,6 +18,7 @@ import EmployeeDetail from "./pages/EmployeeDetail";
 import EmployeeEdit from "./pages/EmployeeEdit";
 import EmployeeDeleteConfirm from "./pages/EmployeeDeleteConfirm";
 import Header from "./components/Header";
+import ShiftApplyConfirm from "./pages/ShiftApplyConfirm";
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
           <Route path="/allshift" element={<AllShift />} />
           <Route path="/todayshift" element={<TodayShift />} />
           <Route path="/shiftapply" element={<ShiftApply />} />
+          <Route path="/shiftapplyconfirm" element={<ShiftApplyConfirm />} />
           <Route path="/shiftedit" element={<ShiftEdit />} />
           <Route path="/salarycalc" element={<SalaryCalc />} />
           <Route path="*" element={<NotFound />} />
