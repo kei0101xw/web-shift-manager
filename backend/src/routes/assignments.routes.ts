@@ -11,16 +11,31 @@ const CreateAssignmentSchema = z.object({
   role_id: z.number().int().positive(),
 });
 
-const GetAssignmentsQuery = z.object({
-  shift_id: z.coerce.number().int().optional(),
-  employee_id: z.coerce.number().int().optional(),
-  role_id: z.coerce.number().int().optional(),
-  status: z.enum(["assigned", "canceled"]).optional(),
-  from: z.string().datetime({ offset: true }).optional(),
-  to: z.string().datetime({ offset: true }).optional(),
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(1000).default(100),
-});
+const IsoTz = z.string().datetime({ offset: true });
+const GetAssignmentsQuery = z
+  .object({
+    employee_id: z.coerce.number().int().optional(),
+    role_id: z.coerce.number().int().optional(),
+    role_code: z.string().max(30).optional(), // "kitchen" / "hall"
+    from: IsoTz.optional(),
+    to: IsoTz.optional(),
+    period: z
+      .string()
+      .regex(/^\d{4}-\d{2}-(H1|H2)$/)
+      .optional(), // "2025-10-H1"
+    with_people: z.coerce.boolean().default(false), // 氏名/ロール名も返す？
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(1000).default(200),
+  })
+  .refine(
+    (v) => {
+      // period があれば from/to 不要、period が無ければ from/to の整合チェック
+      if (v.period) return true;
+      if (!v.from || !v.to) return false;
+      return new Date(v.to) > new Date(v.from);
+    },
+    { path: ["to"], message: "Provide period or valid from/to" }
+  );
 
 const PatchAssignmentSchema = z.object({
   status: z.enum(["assigned", "canceled"]),
@@ -37,6 +52,23 @@ const ValidateBody = z.object({
     )
     .min(1),
 });
+
+function halfMonthRangeJST(period: string) {
+  const m = /^(\d{4})-(\d{2})-(H1|H2)$/.exec(period);
+  if (!m) return null;
+  const [, yStr, moStr, half] = m;
+  const y = Number(yStr),
+    mo = Number(moStr); // 1-12
+  const last = new Date(Date.UTC(y, mo, 0)).getUTCDate(); // 月末日
+  const fromDay = half === "H1" ? 1 : 16;
+  const toDay = half === "H1" ? 15 : last;
+
+  // JSTの 00:00:00 ～ 23:59:59 をオフセット付きISO文字列で
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const from = `${yStr}-${moStr}-${pad(fromDay)}T00:00:00+09:00`;
+  const to = `${yStr}-${moStr}-${pad(toDay)}T23:59:59+09:00`;
+  return { from, to };
+}
 
 assignmentsRouter.post("/", async (req, res, next) => {
   try {
@@ -96,7 +128,7 @@ assignmentsRouter.post("/", async (req, res, next) => {
       );
       if (dup) {
         const e: any = new Error("duplicate_assignment");
-        e.name = "Conflict"; // ← 409 にしたいので Conflict を使う
+        e.name = "Conflict";
         e.meta = { shift_id, employee_id };
         throw e;
       }
@@ -129,7 +161,7 @@ assignmentsRouter.post("/", async (req, res, next) => {
       );
       if (overlap) {
         const e: any = new Error("overlap_employee");
-        e.name = "Conflict"; // ← 409に寄せたいなら Conflict に
+        e.name = "Conflict";
         e.meta = { employee_id, shift_id };
         throw e;
       }
@@ -193,15 +225,30 @@ assignmentsRouter.post("/", async (req, res, next) => {
   }
 });
 
-assignmentsRouter.get("/", async (req, res, next) => {
+assignmentsRouter.get("/", async (req, res) => {
   try {
     const q = GetAssignmentsQuery.parse(req.query);
+
+    // period → from/to に展開（JST）
+    let from = q.from,
+      to = q.to;
+    if (q.period) {
+      const r = halfMonthRangeJST(q.period);
+      if (!r) return res.status(400).json({ error: "bad_period" });
+      from = r.from;
+      to = r.to;
+    }
+
     const params: any[] = [];
     const wh: string[] = [];
 
-    if (q.shift_id) {
-      params.push(q.shift_id);
-      wh.push(`sa.shift_id = $${params.length}`);
+    if (from) {
+      params.push(from);
+      wh.push(`s.start_time >= $${params.length}::timestamptz`);
+    }
+    if (to) {
+      params.push(to);
+      wh.push(`s.end_time   <= $${params.length}::timestamptz`);
     }
     if (q.employee_id) {
       params.push(q.employee_id);
@@ -209,19 +256,14 @@ assignmentsRouter.get("/", async (req, res, next) => {
     }
     if (q.role_id) {
       params.push(q.role_id);
-      wh.push(`sa.role_id = $${params.length}`);
+      wh.push(`sa.role_id     = $${params.length}`);
     }
-    if (q.status) {
-      params.push(q.status);
-      wh.push(`sa.status = $${params.length}`);
-    }
-    if (q.from) {
-      params.push(q.from);
-      wh.push(`s.start_time >= $${params.length}::timestamptz`);
-    }
-    if (q.to) {
-      params.push(q.to);
-      wh.push(`s.end_time   <= $${params.length}::timestamptz`);
+
+    // role_code 指定時は roles をJOIN
+    const joinRoles = q.with_people || !!q.role_code;
+    if (q.role_code) {
+      params.push(q.role_code);
+      wh.push(`r.code = $${params.length}`);
     }
 
     const offset = (q.page - 1) * q.limit;
@@ -229,11 +271,17 @@ assignmentsRouter.get("/", async (req, res, next) => {
 
     const sql = `
       select
-        sa.id, sa.shift_id, sa.employee_id, sa.role_id, sa.status,
-        s.start_time, s.end_time,
-        round(extract(epoch from (s.end_time - s.start_time))/3600.0, 2)::float8 as hours
+        sa.id, sa.shift_id, sa.employee_id,
+        ${q.with_people ? "e.name as employee_name," : ""}
+        sa.role_id
+        ${joinRoles ? ", r.code as role_code, r.name as role_name" : ""}
+        , s.start_time, s.end_time
+        , round(extract(epoch from (s.end_time - s.start_time))/3600.0, 2)::float8 as hours
+        , sa.status
       from shift_assignments sa
       join shifts s on s.id = sa.shift_id
+      ${q.with_people ? "join employees e on e.id = sa.employee_id" : ""}
+      ${joinRoles ? "join roles r on r.id = sa.role_id" : ""}
       ${wh.length ? "where " + wh.join(" and ") : ""}
       order by s.start_time, sa.role_id, sa.employee_id
       limit $${params.length - 1} offset $${params.length}
@@ -241,7 +289,7 @@ assignmentsRouter.get("/", async (req, res, next) => {
     const { rows } = await pool.query(sql, params);
     res.json(rows);
   } catch (err) {
-    next(err);
+    return sendPgError(res, err);
   }
 });
 
