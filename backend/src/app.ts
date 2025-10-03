@@ -4,6 +4,7 @@ import helmet from "helmet";
 import { employeesRouter } from "./routes/employees.routes";
 import { shiftsRouter } from "./routes/shifts.routes";
 import { assignmentsRouter } from "./routes/assignments.routes";
+import { availabilityRouter } from "./routes/availability.routes";
 import { errorHandler } from "./errors";
 
 const app = express();
@@ -18,6 +19,7 @@ app.get("/healthz", (_req, res) => res.json({ ok: true }));
 app.use("/api/v1/employees", employeesRouter);
 app.use("/api/v1/shifts", shiftsRouter);
 app.use("/api/v1/assignments", assignmentsRouter);
+app.use("/api/v1/availability", availabilityRouter);
 
 // エラーハンドラ
 app.use(errorHandler);
