@@ -46,21 +46,39 @@ shiftsRouter.post("/", async (req, res, next) => {
         [start_time, end_time]
       );
 
-      if (requirements.length > 0) {
-        const params: any[] = [];
-        const values: string[] = [];
-        requirements.forEach((r, i) => {
-          params.push(shift.id, r.role_id, r.capacity);
-          const n = params.length;
-          values.push(`($${n - 2}, $${n - 1}, $${n})`);
-        });
-        await c.query(
-          `INSERT INTO shift_requirements (shift_id, role_id, capacity)
-           VALUES ${values.join(",")}
-           on conflict (shift_id, role_id) do update
-              set capacity = excluded.capacity`,
-          params
+      //requirements 未指定/空なら、day_type & JST 時刻完全一致でデフォルト適用
+      let reqsToUse = requirements;
+      if (!reqsToUse || reqsToUse.length === 0) {
+        const { rows: defs } = await c.query(
+          `select role_id, capacity
+             from requirement_defaults
+            where day_type = day_type_jp($1)
+              and start_local = ($1 at time zone 'Asia/Tokyo')::time
+              and end_local   = ($2 at time zone 'Asia/Tokyo')::time
+            order by role_id`,
+          [start_time, end_time]
         );
+        reqsToUse = defs; // 見つからなければ空＝要件なしシフトも作成可
+      }
+
+      if (reqsToUse.length > 0) {
+        const rowsToInsert = reqsToUse.filter((r) => r.capacity > 0);
+        if (rowsToInsert.length > 0) {
+          const params: any[] = [];
+          const values: string[] = [];
+          for (const r of rowsToInsert) {
+            params.push(shift.id, r.role_id, r.capacity);
+            const n = params.length;
+            values.push(`($${n - 2}, $${n - 1}, $${n})`);
+          }
+          await c.query(
+            `INSERT INTO shift_requirements (shift_id, role_id, capacity)
+            VALUES ${values.join(",")}
+            on conflict (shift_id, role_id) do update
+              set capacity = excluded.capacity`,
+            params
+          );
+        }
       }
 
       const { rows: reqs } = await c.query(
@@ -71,10 +89,12 @@ shiftsRouter.post("/", async (req, res, next) => {
         [shift.id]
       );
 
-      return { ...shift, requirements: reqs };
+      const defaults_applied = requirements.length === 0 && reqs.length > 0;
+
+      return { ...shift, requirements: reqs, defaults_applied };
     });
 
-    res.status(201).json(result);
+    res.status(201).location(`/api/v1/shifts/${result.id}`).json(result);
   } catch (err) {
     next(err);
   }
@@ -90,7 +110,7 @@ const GetShiftsQuery = z.object({
   // role_filter_mode: "narrow" | "any" を将来足しても良い
 });
 
-shiftsRouter.get("/", async (req, res) => {
+shiftsRouter.get("/", async (req, res, next) => {
   try {
     const q = GetShiftsQuery.parse(req.query);
     const { from, to, role_id, with_requirements = true, page, limit } = q;
@@ -140,9 +160,8 @@ shiftsRouter.get("/", async (req, res) => {
           json_agg(
             json_build_object('role_id', sr.role_id, 'capacity', sr.capacity)
             order by sr.role_id
-          )
-          filter (where sr.role_id is not null),
-          '[]'
+          ) filter (where sr.role_id is not null),
+          '[]'::json
         ) as requirements
       from shifts s
       left join shift_requirements sr
@@ -155,6 +174,6 @@ shiftsRouter.get("/", async (req, res) => {
     const { rows } = await pool.query(sql, params);
     res.json(rows);
   } catch (err) {
-    sendPgError(res, err);
+    next(err);
   }
 });
