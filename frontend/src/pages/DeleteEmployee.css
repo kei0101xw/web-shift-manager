@@ -1,24 +1,24 @@
-.register-container {
+.register-delete-container {
   max-width: 400px;
-  margin: 30px auto;
+  margin: 50px auto;
   padding: 30px;
   /* border-radius: 10px; */
   /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); */
   background-color: #f9f9f9;
 }
 
-.register-form {
+.delete-form {
   display: flex;
   flex-direction: column;
 }
 
-.register-form label {
-  margin-top: 5px;
+.delete-form label {
+  margin-top: 10px;
   margin-bottom: 5px;
   font-weight: bold;
 }
 
-.register-form input {
+.delete-form input {
   padding: 8px;
   font-size: 1rem;
   border-radius: 5px;
@@ -26,11 +26,11 @@
   margin-bottom: 5px;
 }
 
-.register-form button {
-  margin-top: 50px;
+.delete-form button {
+  margin-top: 100px;
   padding: 10px;
   font-size: 1rem;
-  background-color: #01943c;
+  background-color: rgb(210, 101, 101);
   color: white;
   border: none;
   border-radius: 5px;
@@ -38,7 +38,7 @@
 }
 
 /* セレクトボックス全体のスタイル */
-.register-form select {
+.delete-form select {
   width: 100%;
   padding: 8px;
   margin-bottom: 10px;
@@ -52,14 +52,14 @@
 }
 
 /* フォーカス時の枠線 */
-.register-form select:focus {
+.delete-form select:focus {
   border-color: #007bff;
   outline: none;
   box-shadow: 0 0 4px rgba(0, 123, 255, 0.4);
 }
 
-.register-form button:hover {
-  background-color: #01943c;
+.delete-form button:hover {
+  background-color: red;
 }
 
 .success-message {

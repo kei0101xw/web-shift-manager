@@ -169,7 +169,7 @@ const RegisterEmployee = () => {
 
           <button type="submit">登録</button>
         </form>
-        {submitted && <p className="success-message">登録が完了しました！</p>}
+        {/* {submitted && <p className="success-message">登録が完了しました！</p>} */}
       </div>
     </>
   );
