@@ -31,7 +31,7 @@ const Header = () => {
       <nav className={`nav ${menuOpen ? "open" : ""}`}>
         <ul className="nav-list">
           <li>
-            <Link to="/" className="nav-item">
+            <Link to="/home" className="nav-item">
               Home
             </Link>
           </li>
