@@ -153,21 +153,25 @@ meRouter.get("/pay", async (req: any, res) => {
     } = await pool.query(
       `
       with rng as (
-    select $2::timestamptz as from_ts, $3::timestamptz as to_ts
-  )
-  select
-    coalesce(
-      sum(extract(epoch from (s.end_time - s.start_time))/3600.0)
-      filter (where sa.status = 'assigned'),
-      0
-    )                       as hours,
-    max(e.hourly_wage)      as hourly_wage -- ★ ここを集計に
-  from shifts s
-  join shift_assignments sa on sa.shift_id = s.id and sa.employee_id = $1
-  join employees e on e.id = sa.employee_id
-  join rng on true
-  where s.start_time >= rng.from_ts
-    and s.end_time   <= rng.to_ts
+  select $2::timestamptz as from_ts, $3::timestamptz as to_ts
+)
+select
+  coalesce(
+    sum(extract(epoch from (s.end_time - s.start_time))/3600.0),
+    0
+  ) as hours,
+  e.hourly_wage
+from employees e
+cross join rng
+left join shift_assignments sa
+  on sa.employee_id = e.id
+  and sa.status = 'assigned'
+left join shifts s
+  on s.id = sa.shift_id
+  and s.start_time >= rng.from_ts
+  and s.end_time   <= rng.to_ts
+where e.id = $1
+group by e.hourly_wage;
   `,
       [employeeId, from, to]
     );
