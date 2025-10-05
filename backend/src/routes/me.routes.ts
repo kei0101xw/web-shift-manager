@@ -23,6 +23,16 @@ const Query = z
     { message: "Provide period or valid from/to", path: ["to"] }
   );
 
+const SetTargetSchema = z.object({
+  month: z.string().regex(/^\d{4}-\d{2}$/), // "YYYY-MM"
+  target_amount: z.coerce.number().min(0),
+});
+
+const PutTargetBody = z.object({
+  month: z.string().regex(/^\d{4}-\d{2}$/), // "YYYY-MM"
+  target_amount: z.coerce.number().min(0), // 0以上
+});
+
 function halfMonthRangeJST(period: string) {
   const m = /^(\d{4})-(\d{2})-(H1|H2)$/.exec(period)!;
   const [, yStr, moStr, half] = m;
@@ -143,21 +153,25 @@ meRouter.get("/pay", async (req: any, res) => {
     } = await pool.query(
       `
       with rng as (
-    select $2::timestamptz as from_ts, $3::timestamptz as to_ts
-  )
-  select
-    coalesce(
-      sum(extract(epoch from (s.end_time - s.start_time))/3600.0)
-      filter (where sa.status = 'assigned'),
-      0
-    )                       as hours,
-    max(e.hourly_wage)      as hourly_wage -- ★ ここを集計に
-  from shifts s
-  join shift_assignments sa on sa.shift_id = s.id and sa.employee_id = $1
-  join employees e on e.id = sa.employee_id
-  join rng on true
-  where s.start_time >= rng.from_ts
-    and s.end_time   <= rng.to_ts
+  select $2::timestamptz as from_ts, $3::timestamptz as to_ts
+)
+select
+  coalesce(
+    sum(extract(epoch from (s.end_time - s.start_time))/3600.0),
+    0
+  ) as hours,
+  e.hourly_wage
+from employees e
+cross join rng
+left join shift_assignments sa
+  on sa.employee_id = e.id
+  and sa.status = 'assigned'
+left join shifts s
+  on s.id = sa.shift_id
+  and s.start_time >= rng.from_ts
+  and s.end_time   <= rng.to_ts
+where e.id = $1
+group by e.hourly_wage;
   `,
       [employeeId, from, to]
     );
@@ -207,6 +221,117 @@ meRouter.get("/pay", async (req: any, res) => {
         .status(422)
         .json({ error: "validation_error", issues: err.issues });
     }
+    return sendPgError(res, err);
+  }
+});
+
+meRouter.put("/targets", async (req: any, res) => {
+  try {
+    const { month, target_amount } = SetTargetSchema.parse(req.body);
+    const employeeId: number | undefined =
+      req.user?.employee_id ??
+      req.auth?.employee_id ??
+      (req.query.employee_id && Number(req.query.employee_id));
+    if (!employeeId) return res.status(401).json({ error: "unauthorized" });
+
+    await pool.query(
+      `insert into employee_targets (employee_id, month, target_amount)
+         values ($1, ($2 || '-01')::date, $3)
+       on conflict (employee_id, month)
+       do update set target_amount = excluded.target_amount`,
+      [employeeId, month, target_amount]
+    );
+
+    // 反映内容を返す（source=当月、inherited=false）
+    res.status(200).json({
+      employee_id: employeeId,
+      month,
+      target_amount,
+      is_inherited: false,
+      target_source_month: month,
+    });
+  } catch (err) {
+    return sendPgError(res, err);
+  }
+});
+
+// --- 指定月の「有効ターゲット」だけ知りたい（確認用/設定画面初期値） ---
+meRouter.get("/targets/effective", async (req: any, res) => {
+  try {
+    const month = z
+      .string()
+      .regex(/^\d{4}-\d{2}$/)
+      .parse(req.query.month);
+    const employeeId: number | undefined =
+      req.user?.employee_id ??
+      req.auth?.employee_id ??
+      (req.query.employee_id && Number(req.query.employee_id));
+    if (!employeeId) return res.status(401).json({ error: "unauthorized" });
+
+    const {
+      rows: [t],
+    } = await pool.query(
+      `select month::text as month_txt, target_amount
+         from employee_targets
+        where employee_id=$1
+          and month <= ($2 || '-01')::date
+        order by month desc
+        limit 1`,
+      [employeeId, month]
+    );
+
+    if (!t)
+      return res.json({
+        month,
+        target: null,
+        target_source_month: null,
+        is_inherited: false,
+      });
+
+    const target_source_month = String(t.month_txt).slice(0, 7);
+    res.json({
+      month,
+      target: Number(t.target_amount),
+      target_source_month,
+      is_inherited: target_source_month !== month,
+    });
+  } catch (err) {
+    return sendPgError(res, err);
+  }
+});
+
+// 開発時のみ ?employee_id= で代用
+meRouter.put("/targets", async (req: any, res) => {
+  try {
+    // 本番は認証ミドルウェアから。開発中は ?employee_id= を許可
+    const employeeId: number | undefined =
+      req.user?.employee_id ??
+      req.auth?.employee_id ??
+      (req.query.employee_id && Number(req.query.employee_id));
+    if (!employeeId) return res.status(401).json({ error: "unauthorized" });
+
+    const { month, target_amount } = PutTargetBody.parse(req.body);
+
+    // 月初日に正規化して UPSERT
+    const {
+      rows: [row],
+    } = await pool.query(
+      `
+      insert into employee_targets (employee_id, month, target_amount)
+      values ($1, ($2 || '-01')::date, $3)
+      on conflict (employee_id, month)
+      do update set target_amount = excluded.target_amount
+      returning employee_id, to_char(month,'YYYY-MM') as month, target_amount
+      `,
+      [employeeId, month, target_amount]
+    );
+
+    return res.status(200).json({
+      employee_id: row.employee_id,
+      month: row.month,
+      target_amount: Number(row.target_amount),
+    });
+  } catch (err) {
     return sendPgError(res, err);
   }
 });
