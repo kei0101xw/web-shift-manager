@@ -10,6 +10,6 @@
     "forceConsistentCasingInFileNames": true, // 大文字小文字の不一致をエラーに
     "skipLibCheck": true // ライブラリの型チェックをスキップ（高速化）
   },
-  "include": ["src"], // このフォルダ内を対象に
+  "include": ["src/**/*", "src/types/**/*.d.ts"], // このフォルダ内を対象に
   "exclude": ["node_modules", "dist"]
 }
