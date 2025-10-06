@@ -26,10 +26,6 @@ app.use("/api/v1/auth", authRouter);
 // 以降は要ログイン
 app.use("/api/v1", authGuard);
 
-// ルータ（必要なら一部を requireRole('admin') で保護）
-app.use("/api/v1/employees", employeesRouter);
-// app.use("/api/v1/employees", requireRole("admin"), employeesRouter);
-
 // ルータ
 app.use("/api/v1/shifts", shiftsRouter);
 app.use("/api/v1/assignments", assignmentsRouter);
@@ -38,6 +34,7 @@ app.use("/api/v1/today", todayRouter);
 app.use("/api/v1/me", meRouter);
 
 // 管理者だけ
+app.use("/api/v1/employees", requireRole("admin"), employeesRouter);
 app.use("/api/v1/gaps", requireRole("admin"), gapsRouter);
 
 // エラーハンドラ
