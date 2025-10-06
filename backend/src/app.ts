@@ -8,6 +8,8 @@ import { availabilityRouter } from "./routes/availability.routes";
 import { todayRouter } from "./routes/today.routes";
 import { meRouter } from "./routes/me.routes";
 import { gapsRouter } from "./routes/gaps.routes";
+import { authRouter } from "./routes/auth.routes";
+import { authGuard, requireRole } from "./middleware/auth";
 import { errorHandler } from "./errors";
 
 const app = express();
@@ -17,15 +19,24 @@ app.use(cors());
 app.use(helmet());
 app.use(express.json());
 
-// ルータ
-app.get("/healthz", (_req, res) => res.json({ ok: true }));
+// 公開エンドポイント
+app.get("/healthz", (_req, res) => res.sendStatus(200));
+app.use("/api/v1/auth", authRouter);
+
+// 以降は要ログイン
+app.use("/api/v1", authGuard);
+
+// ルータ（必要なら一部を requireRole('admin') で保護）
 app.use("/api/v1/employees", employeesRouter);
-app.use("/api/v1/shifts", shiftsRouter);
-app.use("/api/v1/assignments", assignmentsRouter);
-app.use("/api/v1/availability", availabilityRouter);
-app.use("/api/v1/today", todayRouter);
-app.use("/api/v1/me", meRouter);
-app.use("/api/v1/gaps", gapsRouter);
+// app.use("/api/v1/employees", requireRole("admin"), employeesRouter);
+
+// ルータ
+app.use("/api/v1/shifts", authGuard, shiftsRouter);
+app.use("/api/v1/assignments", authGuard, assignmentsRouter);
+app.use("/api/v1/availability", authGuard, availabilityRouter);
+app.use("/api/v1/today", authGuard, todayRouter);
+app.use("/api/v1/me", authGuard, meRouter);
+app.use("/api/v1/gaps", authGuard, requireRole("admin"), gapsRouter);
 
 // エラーハンドラ
 app.use(errorHandler);
