@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
+import { authGuard } from "../middleware/auth";
 import bcrypt from "bcryptjs";
 import jwt, { SignOptions, Secret } from "jsonwebtoken";
 import { pool } from "../db/client";
@@ -36,6 +37,16 @@ function toSeconds(v: string): number {
 const LoginSchema = z.object({
   employee_code: z.string().min(1), // 従業員番号でログイン
   password: z.string().min(1),
+});
+
+const ChangePasswordSchema = z.object({
+  current_password: z.string().min(1),
+  new_password: z
+    .string()
+    .min(8, "8文字以上")
+    .regex(/[A-Z]/, "大文字を1つ以上")
+    .regex(/[a-z]/, "小文字を1つ以上")
+    .regex(/\d/, "数字を1つ以上"),
 });
 
 authRouter.post("/login", async (req, res) => {
@@ -86,6 +97,37 @@ authRouter.post("/login", async (req, res) => {
         role: row.role,
       },
     });
+  } catch (err) {
+    return sendPgError(res, err);
+  }
+});
+
+authRouter.post("/change-password", authGuard, async (req: any, res) => {
+  try {
+    const { current_password, new_password } = ChangePasswordSchema.parse(
+      req.body
+    );
+    const userId = req.user?.sub;
+    if (!userId) return res.status(401).json({ error: "unauthorized" });
+
+    const {
+      rows: [u],
+    } = await pool.query(
+      `select id, password_hash from users where id = $1 limit 1`,
+      [userId]
+    );
+    if (!u) return res.status(401).json({ error: "unauthorized" });
+
+    const ok = await bcrypt.compare(current_password, u.password_hash);
+    if (!ok) return res.status(401).json({ error: "invalid_credentials" });
+
+    const new_hash = await bcrypt.hash(new_password, 10);
+    await pool.query(
+      `update users set password_hash=$1, updated_at=now() where id=$2`,
+      [new_hash, userId]
+    );
+    // トークン無効化を厳密にやるなら users に token_version を持たせてJWTに入れる設計も可
+    return res.status(204).send(); // 成功
   } catch (err) {
     return sendPgError(res, err);
   }
