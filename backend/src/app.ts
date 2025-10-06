@@ -31,12 +31,14 @@ app.use("/api/v1/employees", employeesRouter);
 // app.use("/api/v1/employees", requireRole("admin"), employeesRouter);
 
 // ルータ
-app.use("/api/v1/shifts", authGuard, shiftsRouter);
-app.use("/api/v1/assignments", authGuard, assignmentsRouter);
-app.use("/api/v1/availability", authGuard, availabilityRouter);
-app.use("/api/v1/today", authGuard, todayRouter);
-app.use("/api/v1/me", authGuard, meRouter);
-app.use("/api/v1/gaps", authGuard, requireRole("admin"), gapsRouter);
+app.use("/api/v1/shifts", shiftsRouter);
+app.use("/api/v1/assignments", assignmentsRouter);
+app.use("/api/v1/availability", availabilityRouter);
+app.use("/api/v1/today", todayRouter);
+app.use("/api/v1/me", meRouter);
+
+// 管理者だけ
+app.use("/api/v1/gaps", requireRole("admin"), gapsRouter);
 
 // エラーハンドラ
 app.use(errorHandler);
