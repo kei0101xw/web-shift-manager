@@ -98,6 +98,11 @@ authRouter.post("/login", async (req, res) => {
       },
     });
   } catch (err) {
+    if (err instanceof z.ZodError) {
+      return res
+        .status(422)
+        .json({ error: "validation_error", issues: err.issues });
+    }
     return sendPgError(res, err);
   }
 });
@@ -129,11 +134,16 @@ authRouter.post("/change-password", authGuard, async (req: any, res) => {
     // トークン無効化を厳密にやるなら users に token_version を持たせてJWTに入れる設計も可
     return res.status(204).send(); // 成功
   } catch (err) {
+    if (err instanceof z.ZodError) {
+      return res
+        .status(422)
+        .json({ error: "validation_error", issues: err.issues });
+    }
     return sendPgError(res, err);
   }
 });
 
-authRouter.get("/me", (req: any, res) => {
+authRouter.get("/me", authGuard, (req: any, res) => {
   // authGuard をこのルートに適用してから使う
   const u = req.user;
   if (!u) return res.status(401).json({ error: "unauthorized" });
