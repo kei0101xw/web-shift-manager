@@ -15,6 +15,7 @@ const CreateEmployeeSchema = z.object({
     .optional()
     .default("active"),
   is_international_student: z.boolean().default(false),
+  roles_by_code: z.array(z.string().min(1)).optional().default([]),
 });
 
 const UpdateEmployeeSchema = z
@@ -69,6 +70,7 @@ employeesRouter.post("/", async (req, res) => {
       employment_type,
       status,
       is_international_student,
+      roles_by_code,
     } = CreateEmployeeSchema.parse(req.body);
 
     const password_hash = await bcrypt.hash(password, 10);
@@ -107,7 +109,40 @@ employeesRouter.post("/", async (req, res) => {
           weekly_hour_cap,
         ]
       );
-      return employee;
+
+      if (roles_by_code?.length) {
+        const { rows: found } = await c.query(
+          `select id, code from roles where code = any($1::text[])`,
+          [roles_by_code]
+        );
+        if (found.length) {
+          const params: any[] = [];
+          const values: string[] = [];
+          for (const r of found) {
+            params.push(employee.id, r.id, 1, true);
+            const n = params.length;
+            values.push(`($${n - 3}, $${n - 2}, $${n - 1}, $${n})`);
+          }
+          await c.query(
+            `insert into employee_roles (employee_id, role_id, level, active)
+             values ${values.join(",")}
+             on conflict (employee_id, role_id)
+             do update set active=true, level=excluded.level`,
+            params
+          );
+        }
+      }
+
+      const { rows: assigned } = await c.query(
+        `select r.code, r.name, er.level, er.active
+     from employee_roles er
+     join roles r on r.id = er.role_id
+    where er.employee_id = $1
+    order by r.code`,
+        [employee.id]
+      );
+
+      return { ...employee, roles: assigned };
     });
 
     res.status(201).json(newEmployee);
