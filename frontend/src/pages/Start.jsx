@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import logo from "../assets/logo.png";
 import "./Start.css";
 
@@ -9,8 +10,12 @@ const Start = () => {
       <img src={logo} alt="ロゴ画像" className="logo" />
       <div className="login-box">
         <h2 className="login-title">ログイン</h2>
-        <button className="login-button employee">従業員の方はこちら</button>
-        <button className="login-button admin">管理者の方はこちら</button>
+        <Link to="/loginemployee" className="login-button employee">
+          従業員の方はこちら
+        </Link>
+        <Link to="/loginmanager" className="login-button admin">
+          管理者の方はこちら
+        </Link>
       </div>
     </div>
   );

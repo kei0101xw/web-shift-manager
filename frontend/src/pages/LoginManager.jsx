@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import "./LoginManager.css";
 
 export default function LoginManager() {
@@ -84,13 +85,9 @@ export default function LoginManager() {
           </button>
 
           {/* 従業員の方はこちら */}
-          <button
-            type="button"
-            onClick={() => (window.location.href = "/employee-login")}
-            className="login-form__employee-button"
-          >
+          <Link to="/loginemployee" className="login-form__employee-button">
             従業員の方はこちら ＞
-          </button>
+          </Link>
         </form>
       </div>
     </div>
