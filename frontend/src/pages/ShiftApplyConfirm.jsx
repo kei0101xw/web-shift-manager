@@ -42,7 +42,7 @@ export default function ShiftConfirm() {
           <h2>申請内容の確認</h2>
           <p>申請データがありません。申請ページからやり直してください。</p>
           <div className="shift-apply__defaults-buttons">
-            <button onClick={() => navigate("/shift/apply")}>
+            <button onClick={() => navigate("/shiftapply")}>
               申請ページへ
             </button>
           </div>
