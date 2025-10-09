@@ -1,9 +1,24 @@
 :root {
   --green: #2ea62e;
+  --green-weak: #e7f6e7;
   --text: #111;
-  --muted: #777;
-  --pill-bg: #e9e9e9;
+  --muted: #6b7280;
+  --pill-bg: #f3f4f6;
   --circle-bg: #e5e7eb;
+  --card-bg: #fff;
+  --ring: rgba(16, 185, 129, 0.25);
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #f8fafc;
+    --muted: #a3aab5;
+    --pill-bg: #1f2937;
+    --circle-bg: #111827;
+    --card-bg: #0b0f14;
+    --shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  }
 }
 
 * {
@@ -13,6 +28,12 @@ body {
   margin: 0;
   font-family: system-ui, -apple-system, "Hiragino Kaku Gothic ProN",
     "Noto Sans JP", sans-serif;
+  background: radial-gradient(
+      1200px 600px at 50% -200px,
+      var(--green-weak),
+      transparent
+    ),
+    #f8fafc;
 }
 
 button {
@@ -20,31 +41,38 @@ button {
   cursor: pointer;
 }
 
-/* コンテナ */
+/* コンテナ（カード） */
 .salary-calc {
-  max-width: 420px;
-  margin: 0 auto;
-  padding: 24px 20px 48px;
+  max-width: 440px;
+  height: 855px;
+  /* margin: 24px auto 56px; */
+  padding: 24px 22px 40px;
   color: var(--text);
+  background: var(--card-bg);
+  /* border-radius: 20px; */
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 /* 見出し */
 .salary-calc__month {
   text-align: center;
-  font-size: 32px;
-  font-weight: 700;
-  margin: 8px 0 20px;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  margin: 20px 0 20px;
 }
 
-/* 上部ラッパー（目標 & 戻るボタンを横並び） */
+/* 上部 */
 .salary-calc__top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
-/* 月間目標 */
+/* 目標ピル */
 .salary-calc__goal-wrapper {
   display: inline-flex;
   align-items: center;
@@ -52,91 +80,135 @@ button {
   background: var(--pill-bg);
   border-radius: 999px;
   padding: 8px 14px;
-  font-weight: 600;
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.08) inset;
+  font-weight: 700;
+  line-height: 1;
 }
 .salary-calc__goal-label {
-  margin: 0;
+  color: var(--muted);
 }
 .salary-calc__goal-value {
   color: var(--green);
 }
 
-/* 戻るボタン */
+/* 戻る */
 .salary-calc__back-wrapper {
   display: grid;
   justify-items: center;
   gap: 6px;
 }
 .salary-calc__back-square {
-  width: 60px;
-  height: 36px;
+  width: 70px;
+  height: 50px;
   background: var(--green);
+  font-size: 13px;
   border: none;
-  border-radius: 4px;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 800;
+  box-shadow: 0 6px 18px rgba(46, 166, 46, 0.35);
+  transition: transform 0.08s ease, filter 0.1s ease, box-shadow 0.2s ease;
+}
+.salary-calc__back-square:hover {
+  filter: brightness(1.02);
+}
+.salary-calc__back-square:active {
+  transform: translateY(1px) scale(0.99);
+}
+.salary-calc__back-square:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
 }
 .salary-calc__back-text {
   color: var(--green);
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 /* コメント */
 .salary-calc__comment {
   text-align: center;
-  margin: 12px 0 16px;
-  font-weight: 500;
+  margin: 30px 0 20px;
+  font-weight: 600;
+  color: var(--text);
 }
 
 /* ナビゲーション（矢印＋円） */
 .salary-calc__navigation {
   display: grid;
-  grid-template-columns: 40px 1fr 40px;
+  grid-template-columns: 44px 1fr 44px;
   align-items: center;
-  margin: 8px 0 16px;
+  margin: 4px 0 50px;
 }
 .salary-calc__nav-arrow {
-  font-size: 28px;
+  font-size: 24px;
   color: var(--text);
   background: transparent;
   border: none;
-  line-height: 1;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  transition: background 0.15s ease, transform 0.08s ease;
+}
+.salary-calc__nav-arrow:hover {
+  background: var(--pill-bg);
+}
+.salary-calc__nav-arrow:active {
+  transform: scale(0.98);
+}
+.salary-calc__nav-arrow:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
 }
 
 /* 円グラフ */
 .salary-calc__summary {
-  --progress: 0; /* JSXから 0〜1 を渡す */
+  /* 0〜1 の進捗が入る */
+  --progress: 0;
   --angle: calc(var(--progress) * 360deg);
   position: relative;
-  width: 180px;
-  height: 180px;
+  width: 200px;
+  height: 200px;
   margin: 0 auto;
   border-radius: 50%;
   background: conic-gradient(var(--green) var(--angle), var(--circle-bg) 0);
   display: grid;
   place-items: center;
+  transition: background 0.5s ease; /* 進捗のアニメ */
+  box-shadow: inset 0 0 0 10px rgba(0, 0, 0, 0.03);
 }
 .salary-calc__summary::before {
   content: "";
   position: absolute;
   width: 72%;
   height: 72%;
-  background: #fff;
+  background: var(--card-bg);
   border-radius: 50%;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
-.salary-calc__summary-label,
-.salary-calc__summary-value {
+
+/* 円内のラベル */
+.salary-calc__ring-labels {
   position: relative;
   z-index: 1;
-  text-align: center;
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  transform: translateY(-2px);
 }
 .salary-calc__summary-label {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--muted);
 }
 .salary-calc__summary-value {
-  font-weight: 700;
-  margin-top: 4px;
+  font-weight: 800;
+  font-size: 20px;
+  margin-top: 2px;
+  letter-spacing: 0.02em;
+}
+.salary-calc__summary-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
 }
 
 /* 下部（勤務時間・給料見込み） */
@@ -144,29 +216,34 @@ button {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin: 16px 0 40px;
+  margin: 14px 0 4px;
 }
 .salary-calc__detail {
+  background: var(--pill-bg);
+  border-radius: 16px;
+  padding: 12px 10px;
   display: grid;
   justify-items: center;
   gap: 4px;
 }
 .salary-calc__detail-label {
   color: var(--muted);
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 600;
 }
 .salary-calc__detail-value {
-  font-weight: 600;
-  font-size: 15px;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: 0.02em;
 }
 
-/* スマホ小画面対応 */
+/* スマホ対応 */
 @media (max-width: 360px) {
   .salary-calc__month {
-    font-size: 28px;
+    font-size: 24px;
   }
   .salary-calc__summary {
-    width: 160px;
-    height: 160px;
+    width: 170px;
+    height: 170px;
   }
 }
