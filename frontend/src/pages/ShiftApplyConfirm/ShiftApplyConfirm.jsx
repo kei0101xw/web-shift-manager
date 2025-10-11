@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import "./ShiftApply.css";
+import "./ShiftApplyConfirm.css";
 
 const WEEK_LABELS = ["日", "月", "火", "水", "木", "金", "土"];
 

@@ -1,19 +1,19 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import "./ManagerHome.css";
-import calendar from "../assets/calendar.png";
-import human from "../assets/human.png";
-import people from "../assets/people.png";
-import money from "../assets/money.png";
-import paper from "../assets/paper.png";
-import eraser from "../assets/eraser.png";
+import "./Home.css";
+import calendar from "../../assets/calendar.png";
+import human from "../../assets/human.png";
+import people from "../../assets/people.png";
+import money from "../../assets/money.png";
+import paper from "../../assets/paper.png";
+import eraser from "../../assets/eraser.png";
 
-const ManagerHome = () => {
+const Home = () => {
   const navigate = useNavigate();
   return (
     <>
       <div className="home-container">
-        <div>Welcome back, 高吉店長</div>
+        <div>Welcome back, Tomohiro Furuta</div>
         <div className="all-button-group">
           <div className="button-title shift">シフトの確認</div>
           <div className="shift-button-group">
@@ -40,38 +40,31 @@ const ManagerHome = () => {
             </button>
           </div>
           <hr></hr>
-          <div className="button-title submit">シフトの作成・管理</div>
-          <div className="shift-create-manage-group">
+          <div className="button-title submit">シフトの提出・修正</div>
+          <div className="shift-apply-modify-group">
             <button
-              className="shift-create-button"
-              onClick={() => navigate("/shiftcreate")}
+              className="shift-apply-button"
+              onClick={() => navigate("/shiftapply")}
             >
-              <div className="shift-create-button-sentence">シフト作成</div>
+              <div className="shift-apply-button-sentence">シフト申請</div>
               <img src={paper} alt="ロゴ画像" className="paper-logo" />
             </button>
             <button
-              className="shift-manage-button"
-              onClick={() => navigate("/shiftmanage")}
+              className="shift-modify-button"
+              onClick={() => navigate("/shiftedit")}
             >
-              <div className="shift-manage-button-sentence">シフト管理</div>
+              <div className="shift-modify-button-sentence">シフト修正</div>
               <img src={eraser} alt="ロゴ画像" className="eraser-logo" />
             </button>
           </div>
           <hr></hr>
-          <div className="button-title employee">従業員の管理</div>
-          <div className="register-button-group">
+          <div className="button-title shift">給料</div>
+          <div className="salary-calc-button-group">
             <button
-              className="employee-register-button"
-              onClick={() => navigate("/registeremployee")}
+              className="salary-calc-button"
+              onClick={() => navigate("/salarycalc")}
             >
-              <div className="employee-register-sentence">従業員の登録</div>
-              <img src={money} alt="ロゴ画像" className="money-logo" />
-            </button>
-            <button
-              className="employee-delete-button"
-              onClick={() => navigate("/delteemployee")}
-            >
-              <div className="employee-delete-sentence">従業人の削除</div>
+              <div className="salary-calc-sentence">給料計算</div>
               <img src={money} alt="ロゴ画像" className="money-logo" />
             </button>
           </div>
@@ -81,4 +74,4 @@ const ManagerHome = () => {
   );
 };
 
-export default ManagerHome;
+export default Home;
