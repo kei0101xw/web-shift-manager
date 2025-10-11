@@ -45,11 +45,9 @@ button {
 .salary-calc {
   max-width: 440px;
   height: 855px;
-  /* margin: 24px auto 56px; */
   padding: 24px 22px 40px;
   color: var(--text);
   background: var(--card-bg);
-  /* border-radius: 20px; */
   box-shadow: var(--shadow);
   border: 1px solid rgba(0, 0, 0, 0.04);
 }
