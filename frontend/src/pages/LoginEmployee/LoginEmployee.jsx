@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./LoginEmployee.css";
-import { useAuth } from "../auth/AuthContext"; // 既に作ったAuthContextを使用
+import { useAuth } from "../../auth/AuthContext"; // 既に作ったAuthContextを使用
 import { useNavigate, Link } from "react-router-dom";
 
 export default function LoginEmployee() {
