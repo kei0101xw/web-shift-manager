@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./LoginEmployee.css";
-import { useAuth } from "../../auth/AuthContext"; // 既に作ったAuthContextを使用
+import { useAuth } from "../../auth/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 
 export default function LoginEmployee() {
@@ -15,16 +15,16 @@ export default function LoginEmployee() {
   const validate = () => {
     const newErrors = {};
 
-    // 例: "E-123456" や "ADM-0001" など。形式が色々あり得るので、ここでは「空でない」程度に。
+    // 従業員番号が空でないかを確認
     if (!employee_code.trim()) {
       newErrors.employee_code = "従業員番号を入力してください。";
     }
 
-    // パスワード: 8文字以上（上限は設けない）
+    // パスワード: 6文字以上（上限は設けない）
     if (!password) {
       newErrors.password = "パスワードを入力してください。";
-    } else if (password.length < 8) {
-      newErrors.password = "パスワードは8文字以上で入力してください。";
+    } else if (password.length < 6) {
+      newErrors.password = "パスワードは6文字以上で入力してください。";
     }
 
     setErrors(newErrors);
