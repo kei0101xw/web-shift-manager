@@ -13,11 +13,9 @@ export default function LoginManager() {
     const idRegex = /^[0-9]+$/;
 
     if (!emailOrId) {
-      newErrors.emailOrId =
-        "メールアドレスまたは従業員番号を入力してください。";
+      newErrors.emailOrId = "従業員番号を入力してください。";
     } else if (!emailRegex.test(emailOrId) && !idRegex.test(emailOrId)) {
-      newErrors.emailOrId =
-        "有効なメールアドレスまたは従業員番号を入力してください。";
+      newErrors.emailOrId = "有効な従業員番号を入力してください。";
     }
 
     if (!password) {
@@ -42,7 +40,7 @@ export default function LoginManager() {
         <form onSubmit={handleSubmit} className="login-form-input">
           <h1 className="login-manager-title">ログイン(管理者)</h1>
 
-          {/* メールアドレス / 従業員番号 */}
+          {/* 従業員番号 */}
           <input
             id="emailOrId"
             type="text"
@@ -51,7 +49,7 @@ export default function LoginManager() {
             className={`login-form-input-email ${
               errors.emailOrId ? "login-form-input-mail-error" : ""
             }`}
-            placeholder="メールアドレスまたは従業員番号"
+            placeholder="従業員番号"
           />
           {errors.emailOrId && (
             <p className="login-form__error">{errors.emailOrId}</p>
