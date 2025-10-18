@@ -13,12 +13,12 @@
 .logo {
   width: 300px;
   height: auto;
-  margin: 5px auto; /* ロゴを中央に、余白を調整 */
+  margin: 5px auto;
   margin-bottom: 20px;
 }
 
 .login-box {
-  background-color: #aca9a9; /* グレー背景 */
+  background-color: #aca9a9;
   padding: 15px 0;
   border-radius: 12px;
   width: 250px;
@@ -31,7 +31,7 @@
 .login-title {
   font-size: 20px;
   margin-bottom: 30px;
-  margin-top: 30px; /* 上に詰めたい場合はこの値を小さく */
+  margin-top: 30px;
 }
 
 .login-button {
