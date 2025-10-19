@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Outlet } from "react-router-dom";
 import "./App.css";
 import Home from "./pages/Home/Home";
 import LoginEmployee from "./pages/LoginEmployee/LoginEmployee";
@@ -22,36 +22,35 @@ import ManagerHome from "./pages/ManagerHome/ManagerHome";
 import DeleteEmployee from "./pages/DeleteEmployee/DeleteEmployee";
 import ShiftApplyConfirm from "./pages/ShiftApplyConfirm/ShiftApplyConfirm";
 import Ping from "./pages/Ping";
+import PublicLayout from "./layouts/PublicLayout";
 import { RequireAuth, RequireRole } from "./routes/guards";
-import { useLocation } from "react-router-dom";
 
-function Layout({ children }: { children: React.ReactNode }) {
-  const loc = useLocation();
-  // /loginemployee や /loginmanager 以外でヘッダーを表示
-  const showHeader = !["/loginemployee", "/loginmanager"].includes(
-    loc.pathname
-  );
-
+function PrivateLayout() {
   return (
     <>
-      {showHeader && <Header />}
-      <main>{children}</main>
+      {/* ログイン後は常にヘッダー表示 */}
+      <Header />
+      <main>
+        <Outlet />
+      </main>
     </>
   );
 }
 
 function App() {
   return (
-    <Layout>
-      <Routes>
-        {/* 公開 */}
+    <Routes>
+      {/* 公開（未ログイン向け）：常にヘッダーなし */}
+      <Route element={<PublicLayout />}>
         <Route path="/" element={<Start />} />
         <Route path="/_ping" element={<Ping />} />
         <Route path="/loginemployee" element={<LoginEmployee />} />
         <Route path="/loginmanager" element={<LoginManager />} />
+      </Route>
 
-        {/* 認証必須 */}
-        <Route element={<RequireAuth />}>
+      {/* 認証必須：ヘッダーあり */}
+      <Route element={<RequireAuth />}>
+        <Route element={<PrivateLayout />}>
           <Route path="/home" element={<Home />} />
           <Route path="/myshift" element={<MyShift />} />
           <Route path="/allshift" element={<AllShift />} />
@@ -78,9 +77,13 @@ function App() {
             <Route path="/deleteemployee" element={<DeleteEmployee />} />
           </Route>
         </Route>
+      </Route>
+
+      {/* 404：未ログインでも辿り着く可能性があるなら PublicLayout 側に置く */}
+      <Route element={<PublicLayout />}>
         <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Layout>
+      </Route>
+    </Routes>
   );
 }
 
