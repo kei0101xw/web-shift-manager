@@ -18,11 +18,11 @@
 }
 
 .login-box {
-  background-color: #aca9a9;
+  background-color: #bdedc5;
   padding: 15px 0;
   border-radius: 12px;
   width: 250px;
-  height: 200px;
+  height: 250px;
   margin: 30px auto;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
@@ -30,7 +30,7 @@
 
 .login-title {
   font-size: 20px;
-  margin-bottom: 30px;
+  margin-bottom: 50px;
   margin-top: 30px;
 }
 
@@ -48,11 +48,11 @@
 }
 
 .login-button.employee {
-  background-color: #aca9a9;
+  background-color: #bdedc5;
 }
 
 .login-button.admin {
-  background-color: #aca9a9;
+  background-color: #bdedc5;
 }
 
 .login-button:hover {
