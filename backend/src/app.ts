@@ -9,6 +9,7 @@ import { todayRouter } from "./routes/today.routes";
 import { meRouter } from "./routes/me.routes";
 import { gapsRouter } from "./routes/gaps.routes";
 import { authRouter } from "./routes/auth.routes";
+import { adminsRouter } from "./routes/admin.routes";
 import { authGuard, requireRole } from "./middleware/auth";
 import { errorHandler } from "./errors";
 
@@ -27,6 +28,7 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1", authGuard);
 
 // ルータ
+app.use("/api/v1/admins", adminsRouter);
 app.use("/api/v1/shifts", shiftsRouter);
 app.use("/api/v1/assignments", assignmentsRouter);
 app.use("/api/v1/availability", availabilityRouter);
