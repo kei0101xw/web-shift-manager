@@ -46,7 +46,7 @@
   border-radius: 8px;
   color: black;
   text-decoration: none;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 .login-button.employee {
@@ -58,5 +58,11 @@
 }
 
 .login-button:hover {
+  opacity: 0.85;
+}
+
+.login-button.employee:hover,
+.login-button.admin:hover {
+  color: #2563eb;
   opacity: 0.85;
 }
