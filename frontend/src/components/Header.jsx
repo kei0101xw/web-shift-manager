@@ -37,7 +37,11 @@ const Header = () => {
       <nav className={`nav ${menuOpen ? "open" : ""}`}>
         <ul className="nav-list">
           <li>
-            <Link to="/home" className="nav-item">
+            <Link
+              to={user?.role === "admin" ? "/managerhome" : "/home"}
+              className="nav-item"
+              onClick={() => setMenuOpen(false)} // メニュー閉じる
+            >
               Home
             </Link>
           </li>
