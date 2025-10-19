@@ -111,6 +111,13 @@ export default function LoginEmployee() {
           <Link to="/loginmanager" className="login-form-admin-button">
             管理者の方はこちら ＞
           </Link>
+          <button
+            type="button"
+            className="login-form-back-button"
+            onClick={() => nav("/")}
+          >
+            ＜ 戻る
+          </button>
         </form>
       </div>
     </div>

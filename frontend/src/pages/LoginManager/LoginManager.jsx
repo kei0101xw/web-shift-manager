@@ -102,6 +102,13 @@ export default function LoginManager() {
           <Link to="/loginemployee" className="login-form__employee-button">
             従業員の方はこちら ＞
           </Link>
+          <button
+            type="button"
+            className="login-form-back-button"
+            onClick={() => nav("/")}
+          >
+            ＜ 戻る
+          </button>
         </form>
       </div>
     </div>
