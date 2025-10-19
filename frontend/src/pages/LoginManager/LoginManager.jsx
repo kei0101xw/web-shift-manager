@@ -1,37 +1,46 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { useAuth } from "../../auth/AuthContext";
+import { useNavigate, Link } from "react-router-dom";
 import "./LoginManager.css";
 
 export default function LoginManager() {
-  const [emailOrId, setEmailOrId] = useState("");
+  const [employee_code, setEmployeeCode] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
+  const [busy, setBusy] = useState(false);
+  const [serverErr, setServerErr] = useState("");
+  const { login } = useAuth();
+  const nav = useNavigate();
 
   const validate = () => {
     const newErrors = {};
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const idRegex = /^[0-9]+$/;
-
-    if (!emailOrId) {
-      newErrors.emailOrId = "従業員番号を入力してください。";
-    } else if (!emailRegex.test(emailOrId) && !idRegex.test(emailOrId)) {
-      newErrors.emailOrId = "有効な従業員番号を入力してください。";
-    }
-
-    if (!password) {
-      newErrors.password = "パスワードを入力してください。";
-    } else if (password.length < 4 || password.length > 8) {
-      newErrors.password = "パスワードは4〜8文字で入力してください。";
-    }
-
+    if (!employee_code.trim())
+      newErrors.employee_code = "従業員番号を入力してください。";
+    if (!password) newErrors.password = "パスワードを入力してください。";
+    else if (password.length < 8)
+      newErrors.password = "パスワードは8文字以上で入力してください。";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setServerErr("");
     if (!validate()) return;
-    console.log("ログイン:", { emailOrId, password });
+    setBusy(true);
+    try {
+      const user = await login(employee_code.trim(), password);
+      // 権限に応じて遷移先を分ける
+      nav(user.role === "admin" ? "/managerhome" : "/home", { replace: true });
+    } catch (err) {
+      const msg =
+        err?.data?.error === "invalid_credentials"
+          ? "従業員番号またはパスワードが違います。"
+          : "ログインに失敗しました。時間をおいて再度お試しください。";
+      setServerErr(msg);
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -42,17 +51,18 @@ export default function LoginManager() {
 
           {/* 従業員番号 */}
           <input
-            id="emailOrId"
+            id="employee_code"
             type="text"
-            value={emailOrId}
-            onChange={(e) => setEmailOrId(e.target.value)}
+            value={employee_code}
+            onChange={(e) => setEmployeeCode(e.target.value)}
             className={`login-form-input-email ${
-              errors.emailOrId ? "login-form-input-mail-error" : ""
+              errors.employee_code ? "login-form-input-mail-error" : ""
             }`}
-            placeholder="従業員番号"
+            placeholder="従業員番号（例: ADMIN001）"
+            autoComplete="username"
           />
-          {errors.emailOrId && (
-            <p className="login-form__error">{errors.emailOrId}</p>
+          {errors.employee_code && (
+            <p className="login-form__error">{errors.employee_code}</p>
           )}
 
           {/* パスワード */}
@@ -64,11 +74,13 @@ export default function LoginManager() {
             className={`login-form-input-pass ${
               errors.password ? "login-form-input-pass-error" : ""
             }`}
-            placeholder="パスワード"
+            placeholder="パスワード（8文字以上）"
+            autoComplete="current-password"
           />
           {errors.password && (
             <p className="login-form__error">{errors.password}</p>
           )}
+          {serverErr && <p className="login-form__error">{serverErr}</p>}
 
           {/* パスワードを忘れた方はこちら */}
           <div className="login-form-forgot-wrapper">
@@ -78,11 +90,15 @@ export default function LoginManager() {
           </div>
 
           {/* ログインボタン */}
-          <button type="submit" className="login-form-submit-button">
-            ログイン
+          <button
+            type="submit"
+            className="login-form-submit-button"
+            disabled={busy}
+          >
+            {busy ? "ログイン中…" : "ログイン"}
           </button>
 
-          {/* 従業員の方はこちら */}
+          {/* 従業員ログイン */}
           <Link to="/loginemployee" className="login-form__employee-button">
             従業員の方はこちら ＞
           </Link>
