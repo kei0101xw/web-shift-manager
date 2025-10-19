@@ -184,6 +184,41 @@
   transform: translateY(0);
 }
 
+.login-form-back-button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 25%;
+  margin-top: 0.75rem;
+  padding: 0.65rem 1rem;
+  font-weight: 600;
+  color: var(--muted);
+  background-color: transparent;
+  border: 1px solid var(--input-border);
+  border-radius: 10px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease, transform 0.06s ease;
+}
+
+.login-form-back-button:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+.login-form-back-button:active {
+  transform: translateY(0);
+}
+
+/* フォーカス可視化 */
+.login-form-back-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+}
+
 /* ダークモード */
 @media (prefers-color-scheme: dark) {
   :root {
