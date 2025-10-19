@@ -58,6 +58,18 @@
   text-decoration: underline;
 }
 
+.logout-button {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+.logout-button:hover {
+  text-decoration: underline;
+}
+
 /* スマホ対応 */
 @media (max-width: 768px) {
   .hamburger {

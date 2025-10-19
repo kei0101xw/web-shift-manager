@@ -1,18 +1,24 @@
 import React, { useState } from "react";
 import "./Header.css";
-import logo from "../assets/logo_trans.png"; // 相対パスでインポート
+import logo from "../assets/logo_trans.png";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const { logout, user } = useAuth();
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
 
   const goToHome = () => {
-    navigate("/home");
+    navigate(user?.role === "admin" ? "/managerhome" : "/home");
+  };
+
+  const handleLogout = () => {
+    logout();
   };
 
   return (
@@ -36,14 +42,14 @@ const Header = () => {
             </Link>
           </li>
           <li>
-            <Link to="/about" className="nav-item">
-              About
+            <Link to="/profile" className="nav-item">
+              Profile
             </Link>
           </li>
           <li>
-            <Link to="/contact" className="nav-item">
-              Contact
-            </Link>
+            <button onClick={handleLogout} className="nav-item logout-button">
+              Logout
+            </button>
           </li>
         </ul>
       </nav>
