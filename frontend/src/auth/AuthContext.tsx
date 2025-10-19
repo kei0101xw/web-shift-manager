@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("user");
     setToken(null);
     setUser(null);
-    location.assign("/loginemployee");
+    location.assign("/");
   }
 
   const value = useMemo(() => ({ token, user, login, logout }), [token, user]);
