@@ -21,7 +21,11 @@ const ManagerHome = () => {
               className="shift-button all"
               onClick={() => navigate("/allshift")}
             >
-              <div className="shift-button-sentence">全体のシフト</div>
+              <div className="shift-button-sentence">
+                全体の
+                <br />
+                シフト
+              </div>
               <img src={people} alt="ロゴ画像" className="people-logo" />
             </button>
             <button
@@ -35,7 +39,11 @@ const ManagerHome = () => {
               className="shift-button today"
               onClick={() => navigate("/todayshift")}
             >
-              <div className="shift-button-sentence">本日のシフト</div>
+              <div className="shift-button-sentence">
+                本日の
+                <br />
+                シフト
+              </div>
               <img src={calendar} alt="ロゴ画像" className="calendar-logo" />
             </button>
           </div>
