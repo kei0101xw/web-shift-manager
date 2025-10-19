@@ -1,248 +1,153 @@
-/* =========================
-   Design Tokens (CSS変数)
-   ========================= */
-:root {
-  --c-text: #3b3b3b;
-  --c-muted: #4b4b4b;
-  --c-white: #fff;
-
-  --c-all: #a03030;
-  --c-my: #30a066;
-  --c-today: #5330a0;
-  --c-apply: #306aa0;
-  --c-modify: #30a091;
-  --c-salary: #a07530;
-
-  --c-all-hover: #972d2d;
-  --c-my-hover: #2c9660;
-  --c-today-hover: #4e2c97;
-  --c-apply-hover: #2e6599;
-  --c-modify-hover: #2d9688;
-  --c-salary-hover: #8f6b2e;
-
-  --radius: 12px;
-  --shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
-  --shadow-hover: 0 10px 24px rgba(0, 0, 0, 0.16);
-  --gap: 16px;
-  --gap-lg: 24px;
-  --transition: 180ms ease;
-  --container-max: 960px;
-}
-
-/* ダークモード（自動切替） */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --c-text: #e6e6e6;
-    --c-muted: #cccccc;
-    --shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
-    --shadow-hover: 0 10px 24px rgba(0, 0, 0, 0.5);
-  }
-}
-
-/* モーションを控えめに */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/* =========================
-   Layout
-   ========================= */
 .home-container {
-  padding: 20px 24px 32px;
-  margin: 0 auto;
-  max-width: var(--container-max);
-  color: var(--c-text);
+  padding: 20px 30px 30px 30px;
 }
 
 .all-button-group {
-  margin-top: var(--gap-lg);
+  margin-top: 20px;
 }
 
-/* セクションタイトル */
-.button-title {
-  font-weight: 700;
-  color: var(--c-muted);
-  font-size: 18px;
-  margin: 12px 0 var(--gap);
-}
-
-/* 仕切り線を控えめに */
-hr {
-  border: none;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
-  margin: var(--gap-lg) 0;
-}
-@media (prefers-color-scheme: dark) {
-  hr {
-    border-top-color: rgba(255, 255, 255, 0.12);
-  }
-}
-
-/* =========================
-   Buttons (共通ベース)
-   ========================= */
-.shift-button,
-.shift-apply-button,
-.shift-modify-button,
-.salary-calc-button {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  aspect-ratio: 1 / 1;
-  width: 100%;
-  border: none;
-  border-radius: var(--radius);
-  cursor: pointer;
-  color: var(--c-white);
-  font-weight: 700;
-  letter-spacing: 0.02em;
-
-  box-shadow: var(--shadow);
-  transition: transform var(--transition), box-shadow var(--transition),
-    filter var(--transition), background-color var(--transition);
-  will-change: transform;
-}
-
-/* ホバー/アクティブ/フォーカス共通 */
-.shift-button:hover,
-.shift-apply-button:hover,
-.shift-modify-button:hover,
-.salary-calc-button:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-hover);
-}
-
-.shift-button:active,
-.shift-apply-button:active,
-.shift-modify-button:active,
-.salary-calc-button:active {
-  transform: translateY(0);
-  filter: brightness(0.95);
-}
-
-.shift-button:focus-visible,
-.shift-apply-button:focus-visible,
-.shift-modify-button:focus-visible,
-.salary-calc-button:focus-visible {
-  outline: 3px solid rgba(66, 153, 225, 0.7);
-  outline-offset: 2px;
-}
-
-/* ボタン内テキスト */
-.shift-button-sentence,
-.shift-apply-button-sentence,
-.shift-modify-button-sentence,
-.salary-calc-sentence {
-  font-size: 16px;
-  margin-bottom: 8px;
-}
-
-/* アイコン（白抜きのまま扱いやすく） */
-.people-logo,
-.human-logo,
-.calendar-logo,
-.money-logo,
-.paper-logo,
-.eraser-logo {
-  width: 56%;
-  height: auto;
-  filter: brightness(0) invert(1);
-  user-select: none;
-  pointer-events: none;
-}
-
-/* アイコンサイズの微調整（必要なら個別に） */
-.calendar-logo,
-.eraser-logo {
-  width: 62%;
-}
-
-/* =========================
-   Groups（レイアウト群）
-   ========================= */
 .shift-button-group {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(140px, 1fr));
-  gap: var(--gap);
+  display: flex;
+  justify-content: space-between;
+}
+
+.shift-button {
+  width: 30%;
+  aspect-ratio: 1 / 1;
+  margin: 10px 0 20px 0;
+  border: none;
+  border-radius: 10%;
+  cursor: pointer;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0px 0px 15px -5px #777777;
+  border-radius: 10px;
+}
+
+.shift-button.all {
+  background-color: #a03030;
+}
+
+.shift-button.my {
+  background-color: #30a066;
+}
+
+.shift-button.today {
+  background-color: #5330a0;
 }
 
 .shift-apply-modify-group {
   display: grid;
-  grid-template-columns: repeat(3, minmax(140px, 1fr));
-  gap: var(--gap);
-}
-
-/* 1つだけのグリッドでも崩れないように */
-.salary-calc-button-group {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(140px, 1fr));
-  gap: var(--gap);
-}
-
-/* スマホ〜タブレットでの応答 */
-@media (max-width: 920px) {
-  .shift-button-group,
-  .shift-apply-modify-group,
-  .salary-calc-button-group {
-    grid-template-columns: repeat(2, minmax(120px, 1fr));
-  }
-}
-@media (max-width: 560px) {
-  .shift-button-group,
-  .shift-apply-modify-group,
-  .salary-calc-button-group {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* =========================
-   Variant Colors（役割別色）
-   ========================= */
-.shift-button.all {
-  background-color: var(--c-all);
-}
-.shift-button.all:hover {
-  background-color: var(--c-all-hover);
-}
-
-.shift-button.my {
-  background-color: var(--c-my);
-}
-.shift-button.my:hover {
-  background-color: var(--c-my-hover);
-}
-
-.shift-button.today {
-  background-color: var(--c-today);
-}
-.shift-button.today:hover {
-  background-color: var(--c-today-hover);
+  grid-template-columns: 30% 30% 30%;
+  justify-content: space-between;
 }
 
 .shift-apply-button {
-  background-color: var(--c-apply);
-}
-.shift-apply-button:hover {
-  background-color: var(--c-apply-hover);
+  margin: 10px 0 20px 0;
+  border: none;
+  border-radius: 10%;
+  cursor: pointer;
+  background-color: #306aa0;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0px 0px 15px -5px #777777;
+  border-radius: 10px;
 }
 
 .shift-modify-button {
-  background-color: var(--c-modify);
+  aspect-ratio: 1 / 1;
+  margin: 10px 0 20px 0;
+  border: none;
+  border-radius: 10%;
+  cursor: pointer;
+  background-color: #30a091;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0px 0px 15px -5px #777777;
+  border-radius: 10px;
 }
-.shift-modify-button:hover {
-  background-color: var(--c-modify-hover);
+
+.salary-calc-button-group {
+  display: flex;
+  flex-wrap: wrap; /* 画面が狭いときは自動で折り返し */
 }
 
 .salary-calc-button {
-  background-color: var(--c-salary);
+  width: 30%;
+  background-color: #04673a;
+  aspect-ratio: 1 / 1;
+  margin: 10px 50px 20px 0;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0px 0px 15px -5px #777777;
 }
-.salary-calc-button:hover {
-  background-color: var(--c-salary-hover);
+
+.people-logo {
+  width: 50%;
+  height: auto;
+  filter: brightness(0) invert(1);
+}
+
+.human-logo {
+  width: 50%;
+  height: auto;
+  filter: brightness(0) invert(1);
+}
+
+.calendar-logo {
+  width: 60%;
+  height: auto;
+  filter: brightness(0) invert(1);
+}
+
+.money-logo {
+  width: 50%;
+  height: auto;
+  filter: brightness(0) invert(1);
+}
+
+.paper-logo {
+  width: 50%;
+  height: auto;
+  filter: brightness(0) invert(1);
+}
+
+.eraser-logo {
+  width: 60%;
+  height: auto;
+  filter: brightness(0) invert(1);
+}
+
+.button-title {
+  font-weight: 600;
+  color: #4b4b4b;
+  font-size: 18px;
+  margin-top: 10px;
+}
+
+.shift-button.all:hover {
+  background-color: rgb(151, 45, 45);
+}
+
+.shift-button.my:hover {
+  background-color: #2c9660;
+}
+
+.shift-button.today:hover {
+  background-color: #4e2c97;
+}
+
+.shift-apply-button:hover {
+  background-color: #2e6599;
+}
+
+.shift-modify-button:hover {
+  background-color: #2d9688;
+}
+
+.salary-calc-button {
+  background-color: #976e2d;
 }
