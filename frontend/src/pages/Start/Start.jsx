@@ -11,10 +11,10 @@ const Start = () => {
       <div className="login-box">
         <h2 className="login-title">ログイン</h2>
         <Link to="/loginemployee" className="login-button employee">
-          従業員の方はこちら
+          従業員の方はこちら ＞
         </Link>
         <Link to="/loginmanager" className="login-button admin">
-          管理者の方はこちら
+          管理者の方はこちら ＞
         </Link>
       </div>
     </div>
