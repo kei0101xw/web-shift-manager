@@ -1,28 +1,18 @@
 import React, { useMemo, useState } from "react";
 import "./TodayShift.css";
 
-const dayStart = "09:00"; // タイムライン表示の開始
-const dayEnd = "22:00"; // タイムライン表示の終了
-
+const dayStart = "09:00";
+const dayEnd = "22:00";
 const TICK_STEP_MIN = 60;
 
-// ダミーデータ（必要に応じて追加・変更OK）
+// ダミーデータ
 const shifts = [
-  // ホール
   { id: 1, role: "ホール", name: "佐藤", start: "09:00", end: "13:00" },
   { id: 2, role: "ホール", name: "田中", start: "12:00", end: "18:00" },
   { id: 3, role: "ホール", name: "鈴木", start: "17:00", end: "22:00" },
-  // キッチン
-  { id: 4, role: "キッチン", name: "高橋", start: "08:30", end: "14:00" },
+  { id: 4, role: "キッチン", name: "高橋", start: "09:30", end: "14:00" },
   { id: 5, role: "キッチン", name: "伊藤", start: "11:00", end: "20:00" },
   { id: 6, role: "キッチン", name: "中村", start: "18:00", end: "22:00" },
-  // 以降はダミーの重複でもOK
-  { id: 7, role: "ホール", name: "佐藤", start: "09:00", end: "13:00" },
-  { id: 8, role: "ホール", name: "田中", start: "12:00", end: "18:00" },
-  { id: 9, role: "ホール", name: "鈴木", start: "17:00", end: "22:00" },
-  { id: 10, role: "キッチン", name: "高橋", start: "08:30", end: "14:00" },
-  { id: 11, role: "キッチン", name: "伊藤", start: "11:00", end: "20:00" },
-  { id: 12, role: "キッチン", name: "中村", start: "18:00", end: "22:00" },
 ];
 
 const toMinutes = (hhmm) => {
@@ -41,17 +31,32 @@ const calcBarStyle = (start, end) => {
   return { left: `${left}%`, width: `${width}%` };
 };
 
-const TodayShift = () => {
+function todayLabelJST() {
+  const parts = new Intl.DateTimeFormat("ja-JP", {
+    timeZone: "Asia/Tokyo",
+    month: "numeric",
+    day: "numeric",
+    weekday: "short",
+  }).formatToParts(new Date());
+  const m = parts.find((p) => p.type === "month")?.value ?? "";
+  const d = parts.find((p) => p.type === "day")?.value ?? "";
+  const w = parts.find((p) => p.type === "weekday")?.value ?? "";
+  return `${m}月${d}日(${w})のシフト`;
+}
+
+export default function TodayShift() {
   const [selected, setSelected] = useState("ホール");
 
   const totalMinutes = toMinutes(dayEnd) - toMinutes(dayStart);
   const segments = totalMinutes / TICK_STEP_MIN;
 
-  const filtered = useMemo(() => {
-    return shifts
-      .filter((s) => s.role === selected)
-      .sort((a, b) => toMinutes(a.start) - toMinutes(b.start));
-  }, [selected]);
+  const filtered = useMemo(
+    () =>
+      shifts
+        .filter((s) => s.role === selected)
+        .sort((a, b) => toMinutes(a.start) - toMinutes(b.start)),
+    [selected]
+  );
 
   const ticks = useMemo(() => {
     const start = toMinutes(dayStart);
@@ -60,25 +65,22 @@ const TodayShift = () => {
     for (let t = start; t <= end; t += TICK_STEP_MIN) {
       const h = String(Math.floor(t / 60)).padStart(2, "0");
       const m = String(t % 60).padStart(2, "0");
-      out.push(`${h}:${m}`);
+      const left = ((t - start) / (end - start)) * 100;
+      out.push({ label: `${h}:${m}`, left });
     }
     return out;
   }, []);
 
-  // ★ 追加：役割に応じてテーマクラスを付与（CSS 変数が切り替わる）
-  const rootClass = `shift-root ${
-    selected === "キッチン" ? "is-kitchen" : "is-hall"
-  }`;
+  const rootClass = "today-shift-root";
 
   return (
-    // ★ 追加：ルートにテーマクラス
     <div className={rootClass} style={{ "--segments": segments }}>
-      <div className="shift-header">
-        <div className="shift-title">4月25日(金)のシフト</div>
+      <div className="today-shift-header">
+        <div className="today-shift-title">{todayLabelJST()}</div>
 
-        <div className="shift-buttons">
+        <div className="today-shift-buttons">
           <button
-            className={`shift-button shift-button--left ${
+            className={`today-shift-button today-shift-button--left ${
               selected === "ホール" ? "active" : ""
             }`}
             onClick={() => setSelected("ホール")}
@@ -86,7 +88,7 @@ const TodayShift = () => {
             ホール
           </button>
           <button
-            className={`shift-button shift-button--right ${
+            className={`today-shift-button today-shift-button--right ${
               selected === "キッチン" ? "active" : ""
             }`}
             onClick={() => setSelected("キッチン")}
@@ -96,34 +98,37 @@ const TodayShift = () => {
         </div>
       </div>
 
-      {/* タイムラインのヘッダ（目盛り） */}
-      <div className="timeline">
-        <div className="timeline-track">
+      {/* タイムライン */}
+      <div className="today-timeline">
+        <div className="today-timeline-track">
           {ticks.map((t) => (
-            <div className="timeline-tick" key={t}>
-              <span className="timeline-tick-label">{t}</span>
+            <div
+              className="today-timeline-tick"
+              key={t.label}
+              style={{ left: `${t.left}%` }}
+            >
+              <span className="today-timeline-tick-label">{t.label}</span>
             </div>
           ))}
         </div>
       </div>
 
       {/* シフト一覧 */}
-      <div className="shift-list">
+      <div className="today-shift-list">
         {filtered.map((s) => (
-          <div className="shift-card" key={s.id}>
-            <div className="shift-card__header">
-              <div className="shift-info">
-                <span className="shift-card__name">{s.name}</span>
-                <div className="shift-card__time">
+          <div className="today-shift-card" key={s.id}>
+            <div className="today-shift-card__header">
+              <div className="today-shift-info">
+                <span className="today-shift-card__name">{s.name}</span>
+                <div className="today-shift-card__time">
                   <span>{s.start}</span> 〜 <span>{s.end}</span>
                 </div>
               </div>
 
-              <div className="shift-card__bar-wrap">
-                <div className="shift-card__bar-bg" />
-                {/* ★ 変更：色は共通クラス+CSS変数で制御 */}
+              <div className="today-shift-card__bar-wrap">
+                <div className="today-shift-card__bar-bg" />
                 <div
-                  className="shift-card__bar shift-card__bar--accent"
+                  className="today-shift-card__bar today-shift-card__bar--accent"
                   style={calcBarStyle(s.start, s.end)}
                   aria-label={`${s.name}の勤務時間 ${s.start}〜${s.end}`}
                   role="img"
@@ -134,11 +139,9 @@ const TodayShift = () => {
         ))}
 
         {filtered.length === 0 && (
-          <div className="shift-empty">該当するシフトはありません。</div>
+          <div className="today-shift-empty">該当するシフトはありません。</div>
         )}
       </div>
     </div>
   );
-};
-
-export default TodayShift;
+}
