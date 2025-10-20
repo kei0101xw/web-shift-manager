@@ -7,6 +7,21 @@ export const meRouter = Router();
 
 const Ym = z.string().regex(/^\d{4}-\d{2}$/);
 
+const IsoTz = z.string().datetime({ offset: true });
+const AvailabilityItem = z
+  .object({
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), // "YYYY-MM-DD"（フロントからも来る）
+    start_time: IsoTz, // 例: "2025-10-21T09:00:00+09:00"
+    end_time: IsoTz, // 例: "2025-10-21T18:00:00+09:00"
+    note: z.string().max(200).optional().default(""),
+  })
+  .refine(
+    (v) => new Date(v.end_time).getTime() > new Date(v.start_time).getTime(),
+    { path: ["end_time"], message: "end_time must be after start_time" }
+  );
+
+const BulkAvailabilityBody = z.array(AvailabilityItem).min(1);
+
 const Query = z
   .object({
     period: z
@@ -225,32 +240,49 @@ group by e.hourly_wage;
   }
 });
 
-meRouter.put("/targets", async (req: any, res) => {
+/** POST /me/availabilities/bulk
+ * body: [{date, start_time, end_time, note?}, ...]
+ * 返り: { inserted_or_upserted: number }
+ */
+meRouter.post("/availabilities/bulk", async (req: any, res) => {
   try {
-    const { month, target_amount } = SetTargetSchema.parse(req.body);
+    const items = BulkAvailabilityBody.parse(req.body);
+
+    // 認証から従業員ID（開発時は ?employee_id= フォールバックも可）
     const employeeId: number | undefined =
       req.user?.employee_id ??
       req.auth?.employee_id ??
       (req.query.employee_id && Number(req.query.employee_id));
     if (!employeeId) return res.status(401).json({ error: "unauthorized" });
 
-    await pool.query(
-      `insert into employee_targets (employee_id, month, target_amount)
-         values ($1, ($2 || '-01')::date, $3)
-       on conflict (employee_id, month)
-       do update set target_amount = excluded.target_amount`,
-      [employeeId, month, target_amount]
+    // まとめて INSERT（同一範囲は upsert）
+    const params: any[] = [];
+    const values: string[] = [];
+    for (const it of items) {
+      params.push(employeeId, it.start_time, it.end_time, it.note ?? "");
+      const n = params.length;
+      // (employee_id, start_time, end_time, note, status)
+      values.push(`($${n - 3}, $${n - 2}, $${n - 1}, $${n}, 'pending')`);
+    }
+
+    const { rowCount } = await pool.query(
+      `
+      insert into availability_requests
+        (employee_id, start_time, end_time, note, status)
+      values ${values.join(",")}
+      on conflict (employee_id, start_time, end_time)
+      do update set note = excluded.note
+      `,
+      params
     );
 
-    // 反映内容を返す（source=当月、inherited=false）
-    res.status(200).json({
-      employee_id: employeeId,
-      month,
-      target_amount,
-      is_inherited: false,
-      target_source_month: month,
-    });
+    return res.status(201).json({ inserted_or_upserted: rowCount });
   } catch (err) {
+    if (err instanceof z.ZodError) {
+      return res
+        .status(422)
+        .json({ error: "validation_error", issues: err.issues });
+    }
     return sendPgError(res, err);
   }
 });
@@ -300,36 +332,30 @@ meRouter.get("/targets/effective", async (req: any, res) => {
   }
 });
 
-// 開発時のみ ?employee_id= で代用
 meRouter.put("/targets", async (req: any, res) => {
   try {
-    // 本番は認証ミドルウェアから。開発中は ?employee_id= を許可
+    const { month, target_amount } = SetTargetSchema.parse(req.body);
     const employeeId: number | undefined =
       req.user?.employee_id ??
       req.auth?.employee_id ??
       (req.query.employee_id && Number(req.query.employee_id));
     if (!employeeId) return res.status(401).json({ error: "unauthorized" });
 
-    const { month, target_amount } = PutTargetBody.parse(req.body);
-
-    // 月初日に正規化して UPSERT
-    const {
-      rows: [row],
-    } = await pool.query(
-      `
-      insert into employee_targets (employee_id, month, target_amount)
-      values ($1, ($2 || '-01')::date, $3)
-      on conflict (employee_id, month)
-      do update set target_amount = excluded.target_amount
-      returning employee_id, to_char(month,'YYYY-MM') as month, target_amount
-      `,
+    await pool.query(
+      `insert into employee_targets (employee_id, month, target_amount)
+         values ($1, ($2 || '-01')::date, $3)
+       on conflict (employee_id, month)
+       do update set target_amount = excluded.target_amount`,
       [employeeId, month, target_amount]
     );
 
-    return res.status(200).json({
-      employee_id: row.employee_id,
-      month: row.month,
-      target_amount: Number(row.target_amount),
+    // 反映内容を返す（source=当月、inherited=false）
+    res.status(200).json({
+      employee_id: employeeId,
+      month,
+      target_amount,
+      is_inherited: false,
+      target_source_month: month,
     });
   } catch (err) {
     return sendPgError(res, err);
