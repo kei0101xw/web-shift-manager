@@ -26,6 +26,7 @@ import { ShiftPlanProvider } from "./pages/ShiftPlanner/ShiftPlanContext";
 import AdminShiftPlanner from "./pages/ShiftPlanner/AdminShiftPlanner";
 import PublicLayout from "./layouts/PublicLayout";
 import { RequireAuth, RequireRole } from "./routes/guards";
+import ShiftManage from "./pages/ShiftManage/ShiftManage";
 
 function PrivateLayout() {
   return (
@@ -73,6 +74,7 @@ function App() {
                 </ShiftPlanProvider>
               }
             />
+            <Route path="/shiftmanage" element={<ShiftManage />} />
             <Route
               path="/employees/:employeeId/delete-confirm"
               element={<EmployeeDeleteConfirm />}
