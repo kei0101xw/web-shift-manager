@@ -1,0 +1,282 @@
+.planner {
+  padding: 16px;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.controls .num {
+  width: 90px;
+}
+.error {
+  color: #c62828;
+  margin-bottom: 8px;
+}
+
+.gridWrapper {
+  overflow: visible;
+  position: relative;
+}
+
+.gridTable {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: max-content;
+  min-width: 100%;
+  font-size: 14px;
+}
+.gridTable th,
+.gridTable td {
+  border-bottom: 1px solid #eee;
+  border-right: 1px solid #f3f3f3;
+  padding: 8px 10px;
+  white-space: nowrap;
+  text-align: center;
+  min-width: 110px;
+}
+.gridTable th.stickyCol,
+.gridTable td.stickyCol {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: #fff;
+  font-weight: 600;
+}
+.gridTable {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #fafafa;
+  font-weight: 600;
+}
+.stickyHead {
+  position: sticky;
+  top: 0;
+  overflow: visible;
+  z-index: 5;
+}
+
+.gridTable th.stickyCol {
+  background: #fafafa;
+}
+.gridTable .cell {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.gridTable .cell:hover {
+  background: #f5faff;
+}
+.gridTable .cell.empty .placeholder {
+  color: #ccc;
+}
+.gridTable .cell.fromServer {
+  background: #f7fff7;
+}
+.gridTable .cell.decided {
+  background: #e8f1ff;
+  font-weight: 600;
+}
+.gridTable .cell.off {
+  background: #fff3f3;
+  color: #c62828;
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+.actions {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.primary {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: block;
+  margin-left: auto;
+}
+.actions .secondary {
+  background: #f3f4f6;
+  color: #111827;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+}
+.modal {
+  background: #fff;
+  width: 360px;
+  max-width: 90vw;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+.modalRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+.modalActions .primary {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* 役割フィルタ */
+.roleFilters {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0 4px;
+}
+.chip {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.chip.on {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+
+/* 不足バッジ */
+.gapBadge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  vertical-align: middle;
+}
+.gapBadge.small {
+  font-size: 11px;
+  padding: 1px 6px;
+}
+.gapSummary {
+  margin: 6px 0 10px;
+  color: #374151;
+}
+
+/* フィルタ外を薄く */
+.cell.muted {
+  opacity: 0.35;
+}
+
+/* ツールチップ（不足バッジ用） */
+.hasTip {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  z-index: 10; /* 重なりを確保 */
+}
+.hasTip .tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px); /* バッジの上に出す */
+  transform: translateX(-50%);
+  background: rgba(30, 30, 30, 0.95);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  white-space: nowrap;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+
+  /* 非表示状態 */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  transform-origin: bottom center;
+  z-index: 9999; /* 最前面に */
+}
+.hasTip:hover .tooltip {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(-4px);
+}
+.hasTip .tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 7px solid transparent;
+  border-top-color: #111827;
+}
+
+.tipTitle {
+  font-weight: 700;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: #e5e7eb;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  padding-bottom: 6px;
+}
+.tipRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: 12px;
+  align-items: baseline;
+  padding: 4px 0;
+  font-size: 13px;
+}
+.tipRow .tRange {
+  font-variant-numeric: tabular-nums;
+  color: #e5e7eb;
+}
+.tipRow .tRole {
+  color: #c7d2fe;
+} /* 役割（薄青） */
+.tipRow .tGap {
+  color: #fecaca;
+  font-weight: 700;
+} /* 不足（薄赤） */
+.tipRow .tMeta {
+  grid-column: 1 / -1;
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.tipEmpty {
+  font-size: 13px;
+  color: #9ca3af;
+  padding: 6px 0;
+}

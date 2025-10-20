@@ -22,7 +22,9 @@ import ManagerHome from "./pages/ManagerHome/ManagerHome";
 import DeleteEmployee from "./pages/DeleteEmployee/DeleteEmployee";
 import ShiftApplyConfirm from "./pages/ShiftApplyConfirm/ShiftApplyConfirm";
 import Ping from "./pages/Ping";
-// import PublicLayout from "./layouts/PublicLayout";
+import { ShiftPlanProvider } from "./pages/ShiftPlanner/ShiftPlanContext";
+import AdminShiftPlanner from "./pages/ShiftPlanner/AdminShiftPlanner";
+import PublicLayout from "./layouts/PublicLayout";
 import { RequireAuth, RequireRole } from "./routes/guards";
 
 function PrivateLayout() {
@@ -41,12 +43,12 @@ function App() {
   return (
     <Routes>
       {/* 公開（未ログイン向け）：常にヘッダーなし */}
-      {/* <Route element={<PublicLayout />}> */}
-      <Route path="/" element={<Start />} />
-      <Route path="/_ping" element={<Ping />} />
-      <Route path="/loginemployee" element={<LoginEmployee />} />
-      <Route path="/loginmanager" element={<LoginManager />} />
-      {/* </Route> */}
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={<Start />} />
+        <Route path="/_ping" element={<Ping />} />
+        <Route path="/loginemployee" element={<LoginEmployee />} />
+        <Route path="/loginmanager" element={<LoginManager />} />
+      </Route>
 
       {/* 認証必須：ヘッダーあり */}
       <Route element={<RequireAuth />}>
@@ -64,6 +66,14 @@ function App() {
             <Route path="/managerhome" element={<ManagerHome />} />
             <Route path="/employeelist" element={<EmployeeList />} />
             <Route
+              path="/shiftplanner"
+              element={
+                <ShiftPlanProvider>
+                  <AdminShiftPlanner />
+                </ShiftPlanProvider>
+              }
+            />
+            <Route
               path="/employees/:employeeId/delete-confirm"
               element={<EmployeeDeleteConfirm />}
             />
@@ -80,9 +90,9 @@ function App() {
       </Route>
 
       {/* 404：未ログインでも辿り着く可能性があるなら PublicLayout 側に置く */}
-      {/* <Route element={<PublicLayout />}> */}
-      <Route path="*" element={<NotFound />} />
-      {/* </Route> */}
+      <Route element={<PublicLayout />}>
+        <Route path="*" element={<NotFound />} />
+      </Route>
     </Routes>
   );
 }

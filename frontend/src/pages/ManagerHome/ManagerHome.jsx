@@ -52,7 +52,7 @@ const ManagerHome = () => {
           <div className="shift-create-manage-group">
             <button
               className="shift-create-button"
-              onClick={() => navigate("/shiftcreate")}
+              onClick={() => navigate("/shiftplanner")}
             >
               <div className="shift-create-button-sentence">シフト作成</div>
               <img src={paper} alt="ロゴ画像" className="paper-logo" />
