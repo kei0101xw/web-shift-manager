@@ -1,6 +1,8 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./ShiftApplyConfirm.css";
+import { api } from "../../lib/api";
+import { toIsoJst } from "../../utils/time";
 
 const WEEK_LABELS = ["日", "月", "火", "水", "木", "金", "土"];
 
@@ -13,6 +15,8 @@ export default function ShiftConfirm() {
   const { state } = useLocation();
   const navigate = useNavigate();
   const payload = (state && state.payload) || [];
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   const totalDays = payload.length;
   const summary = useMemo(() => {
@@ -25,14 +29,48 @@ export default function ShiftConfirm() {
   }, [payload]);
 
   const handleBack = () => {
-    // 申請ページに payload を持って戻る（state 経由）
     navigate("/shiftapply", { state: { payload } });
   };
 
   const handleSubmit = async () => {
-    console.log("[ShiftConfirm] submit payload", payload);
-    alert("申請を送信しました！");
-    navigate("/home");
+    if (!payload?.length) return;
+
+    setSubmitting(true);
+    setError("");
+    try {
+      // バックエンド想定エンドポイント:
+      // POST /api/v1/me/availabilities/bulk
+      // body: [{ date:"YYYY-MM-DD", start_time:"ISO+09:00", end_time:"ISO+09:00", note?:string }]
+      const body = payload.map((p) => ({
+        date: p.date,
+        start_time: toIsoJst(p.date, p.start),
+        end_time: toIsoJst(p.date, p.end),
+        note: p.note || "",
+      }));
+
+      // 成功時 201 or 200 を想定
+      await api.post("/me/availabilities/bulk", body);
+
+      alert("申請を送信しました！");
+      navigate("/home");
+    } catch (e) {
+      const code = e?.error ?? e?.data?.error; // APIが返す error コード
+      const msg =
+        code === "time_overlap"
+          ? "申請した時間帯が重なっています。時間を調整して再送信してください。"
+          : code === "duplicate"
+          ? "同一の時間帯が既に申請されています。"
+          : e?.status === 401
+          ? "未認証です。ログインし直してください。"
+          : e?.status === 403
+          ? "権限がありません（403）。"
+          : e?.status === 422
+          ? "入力が不正です。時間帯や日付を確認してください。"
+          : "送信に失敗しました。時間をおいて再度お試しください。";
+      setError(msg);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (!payload || payload.length === 0) {
@@ -71,6 +109,8 @@ export default function ShiftConfirm() {
           </div>
         </div>
 
+        {error && <div className="shift-apply__error">{error}</div>}
+
         <div className="shift-apply__detail-grid" style={{ marginTop: 8 }}>
           <div>日付</div>
           <div>開始</div>
@@ -93,8 +133,12 @@ export default function ShiftConfirm() {
         </div>
 
         <div className="shift-apply__submit-row">
-          <button onClick={handleBack}>修正する</button>
-          <button onClick={handleSubmit}>送信する</button>
+          <button disabled={submitting} onClick={handleBack}>
+            修正する
+          </button>
+          <button disabled={submitting} onClick={handleSubmit}>
+            {submitting ? "送信中…" : "送信する"}
+          </button>
         </div>
       </section>
     </div>
