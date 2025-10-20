@@ -1,231 +1,154 @@
 /* ===== デザイントークン（役割ごとに切替） ===== */
-/* ルート（どちらもなければホール相当でもOK） */
-.shift-root {
-  /* accent（ボタン、バー、強調） */
-  --accent-solid: #32a367; /* ボタン等のベタ色 */
-  --accent-on: #ffffff; /* アクセント上の文字色 */
-  --accent-grad-start: #10b981; /* バーのグラデ開始 */
-  --accent-grad-end: #32a367; /* バーのグラデ終了 */
+.today-shift-root {
+  --info-width: 160px;
+  --timeline-gap: 12px;
+  --side-padding: 12px;
 
-  /* バッジ（淡色） */
-  --badge-bg: #ecfdf5; /* emerald-50 */
-  --badge-text: #065f46; /* emerald-800 */
-  --badge-border: #10b981; /* emerald-500 */
-
-  /* タイムライン線色 */
-  --tick: #e5e7eb; /* gray-200/300 相当 */
-  --bar-bg: #f3f4f6; /* gray-100 */
-  --text: #111827; /* gray-900 */
-  --muted: #6b7280; /* gray-500 */
-  --muted2: #374151; /* gray-700 */
-}
-
-/* キッチン時はアクセントを青系に切替 */
-.shift-root.is-kitchen {
-  --accent-solid: #2563eb;
+  --accent-solid: #32a367;
   --accent-on: #ffffff;
-  --accent-grad-start: #3b82f6;
-  --accent-grad-end: #2563eb;
+  --accent-grad-start: #10b981;
+  --accent-grad-end: #32a367;
 
-  --badge-bg: #eff6ff; /* blue-50 */
-  --badge-text: #1e3a8a; /* blue-900 */
-  --badge-border: #3b82f6; /* blue-500 */
+  --badge-bg: #ecfdf5;
+  --badge-text: #065f46;
+  --badge-border: #10b981;
+
+  --tick: #e5e7eb;
+  --bar-bg: #f3f4f6;
+  --text: #111827;
+  --muted: #6b7280;
+  --muted2: #374151;
 }
 
-/* ===== 共通リセット ===== */
-*,
-*::before,
-*::after {
+/* reset (軽め) */
+.today-shift-root *,
+.today-shift-root *::before,
+.today-shift-root *::after {
   box-sizing: border-box;
 }
 
-/* タイトル＋ボタンを横並びで中央寄せ */
-.shift-header {
-  /* display: flex; */
-  justify-content: center; /* 横中央 */
-  align-items: center;
-  gap: 12px;
-  margin: 12px 0 16px;
+/* ===== ヘッダー ===== */
+.today-shift-header {
+  display: block;
   text-align: center;
-  margin-bottom: 30px;
+  margin: 12px 0 30px;
 }
-
-.shift-header .shift-title {
-  margin-top: 30px;
-  margin-bottom: 30px;
-}
-.shift-header .shift-buttons {
-  margin: 0;
-}
-
-/* 画面が狭いときは折り返して縦に */
-@media (max-width: 480px) {
-  .shift-header {
-    flex-wrap: wrap;
-  }
-  .shift-header .shift-title {
-    flex: 1 1 100%;
-    margin-bottom: 6px;
-  }
-}
-
-/* ===== タイトル ===== */
-.shift-title {
+.today-shift-title {
   font-size: 20px;
   font-weight: 700;
-  margin: 12px 0 8px;
+  margin: 18px 0;
   color: var(--text);
 }
-
-/* ===== トグルボタン ===== */
-.shift-buttons {
+.today-shift-buttons {
   display: inline-flex;
   overflow: hidden;
   margin: 8px 0 16px;
-  border: 1px solid white; /* gray-300 */
 }
-
-.shift-button {
+.today-shift-button {
   padding: 10px 16px;
   border: none;
-  background: #f3f4f6; /* gray-100 */
+  background: #f3f4f6;
   color: var(--text);
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s, color 0.15s, filter 0.15s;
-  /* テスト用に入っていた固定高さは削除 */
 }
-
-.shift-button--left {
+.today-shift-button--left {
   border-right: 1px solid #e5e7eb;
-  width: 200px;
-  height: 70px;
+  width: 100px;
+  height: 44px;
   border-radius: 10px 0 0 10px;
 }
-.shift-button--right {
-  width: 200px;
-  height: 70px;
+.today-shift-button--right {
+  width: 100px;
+  height: 44px;
   border-radius: 0 10px 10px 0;
 }
-
-.shift-button:hover {
+.today-shift-button:hover {
   filter: brightness(0.97);
 }
-
-.shift-button.active {
+.today-shift-button.active {
   background: var(--accent-solid);
   color: var(--accent-on);
 }
 
-/* ===== タイムライン（08:00〜22:00／2h刻み＝7区切り） ===== */
-.timeline {
+/* ===== タイムライン ===== */
+.today-timeline {
   margin: 6px 0 10px;
-  padding: 0 12px; /* カードと左右を揃える */
+  padding: 0 var(--side-padding);
+  display: grid;
+  grid-template-columns: var(--info-width) var(--timeline-gap) 1fr;
 }
-
-.timeline-track {
+.today-timeline-track {
   position: relative;
   height: 28px;
-
-  /* 8つの“点”を 1/(8-1)=1/7 間隔で均等配置 → 2時間刻みと一致 */
-  display: flex;
-  justify-content: space-between;
-  align-items: stretch;
-
-  /* 縦線は背景で 1/7 間隔（左右端も線が出る） */
-  background: repeating-linear-gradient(
-    to right,
-    var(--tick) 0,
-    var(--tick) 1px,
-    transparent 1px,
-    transparent calc(100% / var(--segments, 7)) /* ← ここを変更 */
-  );
+  grid-column: 3 / -1;
+  background: linear-gradient(var(--bar-bg), var(--bar-bg)) padding-box,
+    repeating-linear-gradient(
+      to right,
+      var(--tick) 0,
+      var(--tick) 1px,
+      transparent 1px,
+      transparent calc(100% / var(--segments, 13))
+    );
 }
-
-/* それぞれの“点”（ゼロ幅） */
-.timeline-tick {
-  position: relative;
-  height: 100%;
-  width: 0; /* 幅0の“点”として扱う */
+.today-timeline-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  pointer-events: none;
 }
-
-/* ラベルは縦線の真下で中央合わせ */
-.timeline-tick-label {
+.today-timeline-tick-label {
   position: absolute;
   left: 0;
   top: 100%;
-  transform: translate(-50%, 2px); /* Xを-50%で中央寄せ */
+  transform: translate(-50%, 2px);
   font-size: 11px;
   color: var(--muted);
   white-space: nowrap;
 }
 
-/* ===== シフト一覧 ===== */
-.shift-list {
+/* ===== リスト ===== */
+.today-shift-list {
   display: grid;
   gap: 10px;
 }
-
-.shift-card {
+.today-shift-card {
   border: 1px solid #e5e7eb;
   border-radius: 10px;
-  padding: 10px 12px; /* タイムラインと左右を合わせる */
+  padding: 10px var(--side-padding);
   background: #fff;
 }
-
-.shift-card__header {
-  display: flex;
+.today-shift-card__header {
+  display: grid;
+  grid-template-columns: var(--info-width) var(--timeline-gap) 1fr;
   align-items: center;
-  justify-content: space-between;
-  /* margin-right: 20px; */
 }
-
-.shift-info {
-  /* display: flex; */
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 6px; /* 既存 */
-  margin-right: 30px;
+.today-shift-info {
+  grid-column: 1 / 2;
 }
-
-.shift-card__name__time {
-  flex: 0 0 200px; /* ← 幅を確保（例：200px）。可変にしたいなら min-width に変更でもOK */
-  min-width: 160px; /* 安全側に最低幅 */
-}
-
-.shift-card__name {
+.today-shift-card__name {
   font-weight: 700;
   font-size: 16px;
   color: var(--text);
 }
-
-.shift-card__badge {
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 9999px;
-  border: 1px solid var(--badge-border);
-  background: var(--badge-bg);
-  color: var(--badge-text);
-}
-
-.shift-card__time {
+.today-shift-card__time {
   margin-top: 4px;
   font-size: 13px;
   color: var(--muted2);
 }
 
-/* ===== バー表示（カード内タイムライン） ===== */
-.shift-card__bar-wrap {
-  flex: 1; /* ← これが重要！横幅を取ってくれる */
-  min-width: 0; /* 収まりきらない時に縮められるように */
+/* バー */
+.today-shift-card__bar-wrap {
+  grid-column: 3 / -1;
+  min-width: 0;
   position: relative;
   height: 14px;
-  margin-top: 0; /* 2ブロック内なので余白は0でOK（好みで調整） */
 }
-
-.shift-card__bar-bg {
-  position: absolute; /* ← これを付ける */
-  inset: 0; /* ← これで親いっぱいに */
+.today-shift-card__bar-bg {
+  position: absolute;
+  inset: 0;
   border-radius: 9999px;
   background: linear-gradient(var(--bar-bg), var(--bar-bg)) padding-box,
     repeating-linear-gradient(
@@ -233,19 +156,16 @@
       var(--tick) 0,
       var(--tick) 1px,
       transparent 1px,
-      transparent calc(100% / var(--segments, 7))
+      transparent calc(100% / var(--segments, 13))
     );
 }
-
-.shift-card__bar {
+.today-shift-card__bar {
   position: absolute;
   top: 0;
   bottom: 0;
   border-radius: 9999px;
 }
-
-/* 役割に応じて変わるアクセント（グラデ） */
-.shift-card__bar--accent {
+.today-shift-card__bar--accent {
   background: linear-gradient(
     90deg,
     var(--accent-grad-start),
@@ -254,9 +174,16 @@
 }
 
 /* 空表示 */
-.shift-empty {
+.today-shift-empty {
   color: #6b7280;
   font-size: 14px;
   text-align: center;
   padding: 12px 0;
+}
+
+/* レスポンシブ（狭い時はタイトルを上に） */
+@media (max-width: 480px) {
+  .today-shift-header {
+    margin-bottom: 16px;
+  }
 }
