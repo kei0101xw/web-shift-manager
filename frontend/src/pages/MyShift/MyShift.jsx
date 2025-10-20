@@ -1,12 +1,14 @@
+// src/pages/MyShift/MyShift.jsx
 import React, { useEffect, useMemo, useState } from "react";
-import "./MyShift.css"; // 新規CSS（ShiftApply.cssのトークンを再利用）
+import "./MyShift.css";
+import { api } from "../../lib/api";
+import { useAuth } from "../../auth/AuthContext";
 
 // ---- ユーティリティ ----
 const WEEK = ["日", "月", "火", "水", "木", "金", "土"];
 const pad2 = (n) => n.toString().padStart(2, "0");
 const ymd = (d) =>
   `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
-const ym = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`;
 const parseYmd = (s) => {
   const [y, m, dd] = s.split("-").map(Number);
   return new Date(y, m - 1, dd);
@@ -17,58 +19,30 @@ const addMonths = (date, delta) => {
   return d;
 };
 
-// ---- ダミーAPI（実運用では fetch に置き換え）----
-async function fetchMyShifts({ from, to }) {
-  // 例: GET /api/me/shifts?from=YYYY-MM-DD&to=YYYY-MM-DD
-  // const res = await fetch(`/api/me/shifts?from=${from}&to=${to}`);
-  // return await res.json();
-  await new Promise((r) => setTimeout(r, 200));
-  // デモデータ
-  return [
-    {
-      id: 1,
-      date: `${ymd(new Date())}`,
-      start: "10:00",
-      end: "15:00",
-      role: "ホール",
-      status: "approved",
-    },
-    {
-      id: 2,
-      date: `${ymd(new Date())}`,
-      start: "18:00",
-      end: "21:00",
-      role: "キッチン",
-      status: "pending",
-    },
-    {
-      id: 3,
-      date: `${ymd(addMonths(new Date(), 0))}`.replace(/-\d+$/, "-14"),
-      start: "09:00",
-      end: "13:30",
-      role: "ホール",
-      status: "approved",
-    },
-    {
-      id: 4,
-      date: `${ymd(addMonths(new Date(), 0))}`.replace(/-\d+$/, "-22"),
-      start: "12:00",
-      end: "20:00",
-      role: "キッチン",
-      status: "rejected",
-    },
-  ];
-}
+const toIsoStartJst = (yyyyMmDd) => `${yyyyMmDd}T00:00:00+09:00`;
+const toIsoEndJst = (yyyyMmDd) => `${yyyyMmDd}T23:59:59+09:00`;
+
+// ISO → "HH:MM"
+const toHM = (isoOrHHMM) => {
+  if (/^\d{2}:\d{2}$/.test(isoOrHHMM)) return isoOrHHMM;
+  const d = new Date(isoOrHHMM);
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${hh}:${mm}`;
+};
 
 export default function MyShift() {
+  const { user } = useAuth(); // user.employee_id をフォールバックで利用
   const today = useMemo(() => new Date(), []);
   const [viewMonth, setViewMonth] = useState(
     () => new Date(today.getFullYear(), today.getMonth(), 1)
   );
-  const [items, setItems] = useState([]);
+
+  const [items, setItems] = useState([]); // { id, date, start, end, role, status }[]
   const [loading, setLoading] = useState(false);
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [error, setError] = useState("");
 
   const range = useMemo(() => {
     const from = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1);
@@ -77,17 +51,79 @@ export default function MyShift() {
   }, [viewMonth]);
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       setLoading(true);
+      setError("");
       try {
-        const data = await fetchMyShifts(range);
-        setItems(data);
+        const from = toIsoStartJst(range.from);
+        const to = toIsoEndJst(range.to);
+
+        // まずは通常通り /me/shifts を叩く
+        let rows;
+        try {
+          rows = await api.get("/me/shifts", {
+            params: { from, to, with_roles: true },
+          });
+        } catch (err) {
+          // 開発中などで認証が未接続の場合のフォールバック
+          // AuthContext に employee_id が居れば ?employee_id= を付けて再試行
+          if (
+            (err?.status === 401 || err?.status === 403) &&
+            user?.employee_id
+          ) {
+            rows = await api.get("/me/shifts", {
+              params: {
+                from,
+                to,
+                with_roles: true,
+                employee_id: user.employee_id,
+              },
+            });
+          } else {
+            throw err;
+          }
+        }
+
+        // レスポンス正規化（バックエンドのフィールドに合わせてここで吸収）
+        const normalized = (Array.isArray(rows) ? rows : []).map((r, i) => ({
+          id:
+            r.assignment_id ??
+            r.id ??
+            r.shift_id ??
+            `${r.start_time}-${r.role_id ?? i}`,
+          date: (r.start_time || "").slice(0, 10),
+          start: toHM(r.start_time ?? r.start),
+          end: toHM(r.end_time ?? r.end),
+          role: r.role_name ?? r.role_code ?? r.role ?? "—",
+          // 状態が未実装なら一旦 approved 固定にしておく（画面フィルタの互換のため）
+          status: r.status ?? (r.is_completed ? "approved" : "approved"),
+        }));
+
+        if (!cancelled) setItems(normalized);
+      } catch (e) {
+        if (!cancelled) {
+          const msg =
+            e?.status === 401
+              ? "未認証です。ログインし直してください。"
+              : e?.status === 403
+              ? "権限がありません（403）。"
+              : e?.status === 500
+              ? "サーバエラー（500）。"
+              : "シフトの取得に失敗しました。時間をおいて再度お試しください。";
+          setError(msg);
+          setItems([]);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     })();
-  }, [range.from, range.to]);
+    return () => {
+      cancelled = true;
+    };
+  }, [range.from, range.to, user?.employee_id]);
 
+  // 表示用グルーピング
   const grouped = useMemo(() => {
     const filtered = items.filter(
       (it) =>
@@ -99,11 +135,9 @@ export default function MyShift() {
       if (!map.has(it.date)) map.set(it.date, []);
       map.get(it.date).push(it);
     }
-    // 各日を開始時刻で並べ替え
     for (const arr of map.values()) {
       arr.sort((a, b) => a.start.localeCompare(b.start));
     }
-    // 日付キーを昇順
     return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
   }, [items, roleFilter, statusFilter]);
 
@@ -121,8 +155,8 @@ export default function MyShift() {
 
   return (
     <div className="shift-list__container">
+      <div className="shift-list__title">自分のシフト</div>
       <header className="shift-list__header">
-        <div className="shift-list__title">自分のシフト</div>
         <div className="shift-list__controls">
           <button
             className="shift-list__nav"
@@ -139,25 +173,27 @@ export default function MyShift() {
           >
             ▶︎
           </button>
-          <select
-            className="shift-list__select"
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-          >
-            <option value="all">すべての役割</option>
-            <option value="ホール">ホール</option>
-            <option value="キッチン">キッチン</option>
-          </select>
-          <select
-            className="shift-list__select"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="all">すべての状態</option>
-            <option value="approved">承認済み</option>
-            <option value="pending">承認待ち</option>
-            <option value="rejected">否認</option>
-          </select>
+          <div className="shift-list_select">
+            <select
+              className="shift-list__select"
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+            >
+              <option value="all">すべての役割</option>
+              <option value="ホール">ホール</option>
+              <option value="キッチン">キッチン</option>
+            </select>
+            <select
+              className="shift-list__select"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">すべての状態</option>
+              <option value="approved">承認済み</option>
+              <option value="pending">承認待ち</option>
+              <option value="rejected">否認</option>
+            </select>
+          </div>
         </div>
       </header>
 
@@ -170,6 +206,8 @@ export default function MyShift() {
           件数: <b>{items.length}</b>
         </div>
       </section>
+
+      {error && <div className="shift-list__error">{error}</div>}
 
       {loading ? (
         <div className="shift-list__skeleton">読み込み中...</div>
@@ -193,9 +231,7 @@ export default function MyShift() {
                       <span className="shift-list__time-end">{it.end}</span>
                     </div>
                     <div className="shift-list__meta">
-                      <span className={`shift-list__badge role`}>
-                        {it.role}
-                      </span>
+                      <span className="shift-list__badge role">{it.role}</span>
                       <span
                         className={`shift-list__badge status status--${it.status}`}
                       >
