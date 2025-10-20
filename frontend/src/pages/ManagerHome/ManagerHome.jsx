@@ -7,13 +7,15 @@ import people from "../../assets/people.png";
 import money from "../../assets/money.png";
 import paper from "../../assets/paper.png";
 import eraser from "../../assets/eraser.png";
+import { useAuth } from "../../auth/AuthContext";
 
 const ManagerHome = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   return (
     <>
       <div className="home-container">
-        <div>Welcome back, 高吉店長</div>
+        <div className="home-greeting">Welcome back, {user?.name ?? ""}</div>
         <div className="all-button-group">
           <div className="button-title shift">シフトの確認</div>
           <div className="shift-button-group">

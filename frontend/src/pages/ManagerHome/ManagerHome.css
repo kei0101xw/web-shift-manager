@@ -2,6 +2,12 @@
   padding: 20px 30px 30px 30px;
 }
 
+.home-greeting {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
 .all-button-group {
   margin-top: 20px;
 }
