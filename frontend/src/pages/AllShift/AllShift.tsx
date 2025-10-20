@@ -1,81 +1,59 @@
 import React, { useEffect, useMemo, useState } from "react";
-import "./AllShift.css"; // 新規CSS（ShiftApply.css のトークンを再利用）
+import "./AllShift.css";
+import { api } from "../../lib/api";
 
 // ========= ユーティリティ =========
 const WEEK = ["日", "月", "火", "水", "木", "金", "土"];
-const pad2 = (n) => n.toString().padStart(2, "0");
-const ymd = (d) =>
+const pad2 = (n: number) => n.toString().padStart(2, "0");
+const ymd = (d: Date) =>
   `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
-const ym = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`;
-const parseYmd = (s) => {
+const ym = (d: Date) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`;
+const parseYmd = (s: string) => {
   const [y, m, dd] = s.split("-").map(Number);
   return new Date(y, m - 1, dd);
 };
-const endOfMonth = (date) =>
+const endOfMonth = (date: Date) =>
   new Date(date.getFullYear(), date.getMonth() + 1, 0);
-const addMonths = (date, delta) => {
+const addMonths = (date: Date, delta: number) => {
   const d = new Date(date);
   d.setMonth(d.getMonth() + delta);
   return d;
 };
 
-// ========= ダミーAPI（実運用では fetch に置き換え） =========
-/**
- * 返り値: Array<{ id, employeeId, employeeName, role: 'ホール'|'キッチン', date:'YYYY-MM-DD', start:'HH:MM', end:'HH:MM', status:'approved'|'pending'|'rejected' }>
- */
-async function fetchAllShifts({ month, role }) {
-  // 例）GET /api/shifts?month=YYYY-MM&role=ホール
-  // const res = await fetch(`/api/shifts?month=${month}&role=${encodeURIComponent(role)}`);
-  // return await res.json();
-  await new Promise((r) => setTimeout(r, 200));
+// JST(+09:00) で月初/月末の ISO を作る
+const toIsoStartJst = (yyyyMmDd: string) => `${yyyyMmDd}T00:00:00+09:00`;
+const toIsoEndJst = (yyyyMmDd: string) => `${yyyyMmDd}T23:59:59+09:00`;
 
-  // デモデータ作成
-  const base = new Date(
-    Number(month.split("-")[0]),
-    Number(month.split("-")[1]) - 1,
-    1
-  );
-  const make = (empId, name, r, day, st, en, status = "approved") => ({
-    id: `${empId}-${day}-${st}`,
-    employeeId: empId,
-    employeeName: name,
-    role: r,
-    date: ymd(new Date(base.getFullYear(), base.getMonth(), day)),
-    start: st,
-    end: en,
-    status,
-  });
-  const demo = [
-    // ホール
-    make("E01", "佐藤", "ホール", 1, "10:00", "18:00"),
-    make("E02", "田中", "ホール", 2, "12:00", "20:00", "pending"),
-    make("E03", "鈴木", "ホール", 6, "09:00", "15:00"),
-    make("E01", "佐藤", "ホール", 14, "10:00", "17:00"),
-    make("E02", "田中", "ホール", 18, "12:00", "16:00"),
-    make("E03", "鈴木", "ホール", 22, "09:00", "13:00", "rejected"),
-    make("E04", "高橋", "ホール", 28, "17:00", "22:00"),
-    // キッチン
-    make("E11", "小林", "キッチン", 3, "08:00", "14:00"),
-    make("E12", "山本", "キッチン", 5, "11:00", "19:00"),
-    make("E13", "渡辺", "キッチン", 12, "13:00", "21:00", "pending"),
-    make("E11", "小林", "キッチン", 17, "08:00", "14:00"),
-    make("E12", "山本", "キッチン", 20, "11:00", "19:00"),
-    make("E13", "渡辺", "キッチン", 26, "13:00", "21:00"),
-  ];
-  return demo.filter((d) => (role === "ALL" ? true : d.role === role));
-}
+// API → UI 用に正規化
+type UiItem = {
+  id: string | number;
+  employeeId: number;
+  employeeName: string;
+  role: string; // "ホール" | "キッチン"
+  date: string; // "YYYY-MM-DD"
+  start: string; // "HH:MM"
+  end: string; // "HH:MM"
+  status: "approved" | "pending" | "rejected";
+};
+const toHM = (iso: string) => {
+  const d = new Date(iso);
+  return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+};
 
 // ========= 行列構築ユーティリティ =========
-function buildMatrix(items, startDay, endDay, viewMonth) {
+function buildMatrix(items: UiItem[], startDay: number, endDay: number, viewMonth: Date) {
   // dayKeys: ['YYYY-MM-01', ...]
-  const dayKeys = [];
+  const dayKeys: string[] = [];
   for (let d = startDay; d <= endDay; d++) {
     const date = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), d);
     dayKeys.push(ymd(date));
   }
 
   // employeeName順で行を作る
-  const byEmp = new Map(); // name -> { id, name, cells: Map(dayKey -> [shifts]) }
+  const byEmp = new Map<
+    string,
+    { id: number | string; name: string; cells: Map<string, UiItem[]> }
+  >();
   for (const it of items) {
     if (!byEmp.has(it.employeeName))
       byEmp.set(it.employeeName, {
@@ -83,9 +61,9 @@ function buildMatrix(items, startDay, endDay, viewMonth) {
         name: it.employeeName,
         cells: new Map(),
       });
-    const row = byEmp.get(it.employeeName);
+    const row = byEmp.get(it.employeeName)!;
     if (!row.cells.has(it.date)) row.cells.set(it.date, []);
-    row.cells.get(it.date).push(it);
+    row.cells.get(it.date)!.push(it);
   }
   const rows = Array.from(byEmp.values()).sort((a, b) =>
     a.name.localeCompare(b.name, "ja")
@@ -98,35 +76,95 @@ export default function AllShift() {
   const [viewMonth, setViewMonth] = useState(
     () => new Date(today.getFullYear(), today.getMonth(), 1)
   );
-  const [role, setRole] = useState("ホール"); // 'ホール' | 'キッチン' | 'ALL'
-  const [items, setItems] = useState([]);
+  const [role, setRole] = useState<"ホール" | "キッチン" | "ALL">("ホール");
+  const [items, setItems] = useState<UiItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const monthStr = ym(viewMonth);
-  const eom = endOfMonth(viewMonth).getDate();
+  const eomDate = endOfMonth(viewMonth);
+  const eom = eomDate.getDate();
   const firstEnd = Math.min(15, eom);
-  const secondStart = Math.min(16, eom + 1); // 16 or past EOM (no effect)
+  const secondStart = Math.min(16, eom + 1);
   const secondEnd = eom;
 
+  // ---- バックエンド取得 ----
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       setLoading(true);
+      setError("");
       try {
-        const data = await fetchAllShifts({ month: monthStr, role });
-        setItems(data);
+        // 今月の JST 範囲
+        const from = toIsoStartJst(`${monthStr}-01`);
+        const to = toIsoEndJst(ymd(eomDate));
+
+        // people と roles を一緒に返す
+        // /api/v1/assignments?from=...&to=...&with_people=true&with_roles=true
+        const rows = await api.get("/assignments", {
+          params: {
+            from,
+            to,
+            with_people: true,
+            with_roles: true,
+            // 役割でサーバ側絞り込みしたいなら role_code / role_id を付ける
+            // role_code: role === "ALL" ? undefined : (role === "ホール" ? "hall" : "kitchen"),
+          },
+        });
+
+        const normalized: UiItem[] = (Array.isArray(rows) ? rows : []).map(
+          (r: any, i: number) => ({
+            id: r.id ?? `${r.shift_id}-${r.employee_id}-${i}`,
+            employeeId: r.employee_id,
+            employeeName: r.employee_name ?? "不明",
+            role: r.role_name ?? r.role_code ?? "不明",
+            date: String(r.start_time).slice(0, 10),
+            start: toHM(r.start_time),
+            end: toHM(r.end_time),
+            // いまは確定のみ返している想定なので "approved" に寄せる
+            status:
+              r.status === "pending"
+                ? "pending"
+                : r.status === "rejected"
+                ? "rejected"
+                : "approved",
+          })
+        );
+
+        if (!cancelled) setItems(normalized);
+      } catch (e: any) {
+        if (!cancelled) {
+          setError(
+            e?.status === 401
+              ? "未認証です。ログインし直してください。"
+              : e?.status === 403
+              ? "権限がありません（403）。"
+              : "全体シフトの取得に失敗しました。時間をおいて再度お試しください。"
+          );
+          setItems([]);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     })();
-  }, [monthStr, role]);
+    return () => {
+      cancelled = true;
+    };
+  }, [monthStr]);
+
+  // 役割フィルタ（フロント側）
+  const filteredItems = useMemo(() => {
+    if (role === "ALL") return items;
+    return items.filter((it) => it.role === role);
+  }, [items, role]);
 
   const firstHalf = useMemo(
-    () => buildMatrix(items, 1, firstEnd, viewMonth),
-    [items, firstEnd, viewMonth]
+    () => buildMatrix(filteredItems, 1, firstEnd, viewMonth),
+    [filteredItems, firstEnd, viewMonth]
   );
   const secondHalf = useMemo(
-    () => buildMatrix(items, secondStart, secondEnd, viewMonth),
-    [items, secondStart, secondEnd, viewMonth]
+    () => buildMatrix(filteredItems, secondStart, secondEnd, viewMonth),
+    [filteredItems, secondStart, secondEnd, viewMonth]
   );
 
   return (
@@ -178,6 +216,8 @@ export default function AllShift() {
           </div>
         </div>
       </header>
+
+      {error && <div className="shift-all__error">{error}</div>}
 
       {loading ? (
         <div className="shift-all__skeleton">読み込み中...</div>
