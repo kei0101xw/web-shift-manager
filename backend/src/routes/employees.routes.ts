@@ -3,6 +3,7 @@ import { query, withTx } from "../db/client";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { sendPgError } from "../errors";
+import { authGuard, requireRole } from "../middleware/auth";
 
 export const employeesRouter = Router();
 
@@ -126,7 +127,7 @@ employeesRouter.get("/:id", async (req, res) => {
 });
 
 /** POST /api/v1/employees */
-employeesRouter.post("/", async (req, res) => {
+employeesRouter.post("/", requireRole("admin"), async (req, res) => {
   try {
     const {
       name,
@@ -218,7 +219,7 @@ employeesRouter.post("/", async (req, res) => {
 });
 
 /** PATCH /api/v1/employees/:id  **/
-employeesRouter.patch("/:id", async (req, res) => {
+employeesRouter.patch("/:id", requireRole("admin"), async (req, res) => {
   try {
     const id = z.coerce.number().int().positive().parse(req.params.id);
     const body = UpdateEmployeeSchema.parse(req.body);
@@ -240,6 +241,7 @@ employeesRouter.patch("/:id", async (req, res) => {
          set ${setClauses.join(", ")}
        where id = $${values.length}
        returning id, employee_code, name, status, employment_type,
+          work_area,
           hourly_wage::float8 as hourly_wage, weekly_hour_cap,
           is_international_student`,
       values
@@ -252,6 +254,73 @@ employeesRouter.patch("/:id", async (req, res) => {
     }
     res.json(updatedEmployee);
   } catch (e: any) {
+    sendPgError(res, e);
+  }
+});
+
+// 先頭で共通の正規化関数
+const normalize = (s: string) =>
+  s
+    .replace(/\u3000/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+// DELETE /api/v1/employees/:id
+employeesRouter.delete("/:id", requireRole("admin"), async (req, res) => {
+  try {
+    const id = z.coerce.number().int().positive().parse(req.params.id);
+    const body = z
+      .object({
+        confirm_employee_code: z.string().min(1),
+        confirm_name: z.string().min(1),
+        hard: z.boolean().optional().default(false),
+      })
+      .parse(req.body);
+
+    const [emp] = await query<{
+      id: number;
+      employee_code: string;
+      name: string;
+      deleted_at: string | null;
+    }>(
+      `SELECT id, employee_code, name, deleted_at FROM employees WHERE id = $1`,
+      [id]
+    );
+    if (!emp) return res.status(404).json({ error: "not_found" });
+    if (emp.deleted_at)
+      return res.status(409).json({ error: "already_deleted" });
+
+    // ★ 正規化して比較（大文字小文字も吸収したいなら toLowerCase も）
+    if (
+      normalize(emp.employee_code) !== normalize(body.confirm_employee_code) ||
+      normalize(emp.name) !== normalize(body.confirm_name)
+    ) {
+      return res.status(400).json({ error: "mismatch" });
+    }
+
+    // 未消化のシフト割当があるかチェック（例）
+    const [{ count }] = await query<{ count: string }>(
+      `
+        SELECT count(*)::int
+          FROM shift_assignments sa
+          JOIN shifts s ON s.id = sa.shift_id
+         WHERE sa.employee_id = $1
+           AND sa.status = 'assigned'
+           AND s.end_time > now()
+      `,
+      [id]
+    );
+    if (Number(count) > 0) {
+      return res.status(409).json({ error: "has_future_assignments" });
+    }
+
+    // ソフトデリート
+    await query(
+      `UPDATE employees SET deleted_at = now(), updated_at = now() WHERE id = $1`,
+      [id]
+    );
+    return res.status(204).send();
+  } catch (e) {
     sendPgError(res, e);
   }
 });
