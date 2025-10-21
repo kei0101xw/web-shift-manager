@@ -74,8 +74,8 @@ const EmployeeList = () => {
             <h2 className="employee-name">{emp.name}</h2>
             <div className="employee-meta">
               <span className="badge">{emp.role}</span>
+              <span>：</span>
               {emp.workArea && <span className="pill">{emp.workArea}</span>}
-              <span className="code">No. {emp.employeeId}</span>
             </div>
           </button>
         ))}
