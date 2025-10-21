@@ -79,7 +79,7 @@
 }
 
 .employee-register-button,
-.employee-delete-button {
+.employee-list-button {
   width: 30%;
   aspect-ratio: 1 / 1;
   margin: 10px 50px 20px 0;
@@ -95,8 +95,8 @@
   background-color: #04673a;
 }
 
-.employee-delete-button {
-  background-color: #9b0606;
+.employee-list-button {
+  background-color: #59b7df;
 }
 
 .people-logo {
@@ -160,6 +160,10 @@
 
 .shift-modify-button:hover {
   background-color: #2d9688;
+}
+
+.employee-list-button:hover {
+  background-color: #3eae9f;
 }
 
 .salary-calc-button {
