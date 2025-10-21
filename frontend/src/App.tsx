@@ -65,7 +65,7 @@ function App() {
           {/* 管理者専用 */}
           <Route element={<RequireRole roles={["admin"]} />}>
             <Route path="/managerhome" element={<ManagerHome />} />
-            <Route path="/employeelist" element={<EmployeeList />} />
+            <Route path="/employees" element={<EmployeeList />} />
             <Route
               path="/shiftplanner"
               element={
