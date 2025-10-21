@@ -10,10 +10,9 @@ const RegisterEmployee = () => {
   const [employee, setEmployee] = useState({
     employeeId: "",
     name: "",
-    email: "",
     employmentPeliod: today,
     workErea: "",
-    workingHours: "",
+    isInternational: false,
     role: "",
     password: "",
     ...(location.state || {}), // ← 戻ってきたときの値を初期値にする
@@ -32,7 +31,6 @@ const RegisterEmployee = () => {
     const newErrors = {};
     const idRegex = /^[0-9]+$/;
     const nameRegex = /^[^\s]+ [^\s]+$/; // 半角スペースが1つ含まれる氏名
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!employee.employeeId) {
       newErrors.employeeId = "従業員番号を入力してください。";
@@ -47,18 +45,8 @@ const RegisterEmployee = () => {
         "氏名は半角スペースで姓と名を区切ってください。（例: 山田 太郎）";
     }
 
-    if (!employee.email) {
-      newErrors.email = "メールアドレスを入力してください。";
-    } else if (!emailRegex.test(employee.email)) {
-      newErrors.email = "正しいメールアドレス形式で入力してください。";
-    }
-
     if (!employee.workErea) {
       newErrors.workErea = "担当を選択してください。";
-    }
-
-    if (!employee.workingHours) {
-      newErrors.workingHours = "勤務期間を入力してください。";
     }
 
     if (!employee.role) {
@@ -109,16 +97,6 @@ const RegisterEmployee = () => {
           />
           {errors.name && <p className="error-message">{errors.name}</p>}
 
-          <label>メールアドレス</label>
-          <input
-            type="email"
-            name="email"
-            value={employee.email}
-            onChange={handleChange}
-            placeholder="例: example@example.com"
-          />
-          {errors.email && <p className="error-message">{errors.email}</p>}
-
           <label>担当</label>
           <select
             name="workErea"
@@ -134,17 +112,20 @@ const RegisterEmployee = () => {
             <p className="error-message">{errors.workErea}</p>
           )}
 
-          <label>最大可能勤務時間 [ h / 週 ]</label>
-          <input
-            type="number"
-            name="workingHours"
-            value={employee.workingHours}
-            onChange={handleChange}
-            placeholder="例: 28"
-          />
-          {errors.workingHours && (
-            <p className="error-message">{errors.workingHours}</p>
-          )}
+          <label>
+            <input
+              type="checkbox"
+              name="isInternational"
+              checked={employee.isInternational}
+              onChange={(e) =>
+                setEmployee((prev) => ({
+                  ...prev,
+                  isInternational: e.target.checked,
+                }))
+              }
+            />
+            留学生です
+          </label>
 
           <label>雇用形態</label>
           <select name="role" value={employee.role} onChange={handleChange}>
@@ -167,9 +148,8 @@ const RegisterEmployee = () => {
             <p className="error-message">{errors.password}</p>
           )}
 
-          <button type="submit">登録</button>
+          <button type="submit">確認</button>
         </form>
-        {/* {submitted && <p className="success-message">登録が完了しました！</p>} */}
       </div>
     </>
   );
