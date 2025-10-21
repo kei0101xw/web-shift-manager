@@ -1,6 +1,7 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./ConfirmEmployee.css";
+import { api } from "../../lib/api";
 
 const ConfirmEmployee = () => {
   const { state } = useLocation();
@@ -13,19 +14,50 @@ const ConfirmEmployee = () => {
   const {
     employeeId,
     name,
-    email,
     employmentPeliod,
     workErea,
-    workingHours,
+    isInternational,
     role,
     password,
   } = state;
 
-  const handleConfirm = () => {
-    console.log("送信データ:", state);
-    alert("登録を確定しました！");
-    // TODO: API送信処理をここに書く
-    navigate("/home");
+  const handleConfirm = async () => {
+    try {
+      // 1) 画面 → サーバ形式にマッピング
+      const employment_typeMap = {
+        社員: "full_time",
+        パート: "part_time",
+        アルバイト: "baito",
+      };
+      const employment_type = employment_typeMap[role];
+
+      const roles_by_code =
+        workErea === "キッチン"
+          ? ["kitchen"]
+          : workErea === "ホール"
+          ? ["hall"]
+          : workErea === "キッチン&ホール"
+          ? ["kitchen", "hall"]
+          : [];
+
+      // 2) POST /employees
+      const createRes = await api.post("/employees", {
+        name,
+        password,
+        employment_type, // "full_time" | "part_time" | "baito"
+        status: "active",
+        is_international_student: Boolean(isInternational), // 週上限は後でPATCHするので false でOK
+        roles_by_code, // ["kitchen", "hall"] など
+      });
+      const created = createRes.data ?? createRes; // your api ラッパ次第
+      const newId = created.id;
+
+      alert("登録が完了しました。");
+      navigate("/home");
+    } catch (e) {
+      console.error(e);
+      alert("登録に失敗しました。入力内容をご確認ください。");
+    }
   };
 
   const handleEdit = () => {
@@ -51,10 +83,6 @@ const ConfirmEmployee = () => {
             {name}
           </li>
           <li>
-            <strong>メールアドレス：</strong>
-            {email}
-          </li>
-          <li>
             <strong>出勤開始日：</strong>
             {employmentPeliod}
           </li>
@@ -63,8 +91,8 @@ const ConfirmEmployee = () => {
             {workErea}
           </li>
           <li>
-            <strong>最大可能勤務時間：</strong>
-            {workingHours}
+            <strong>留学生：</strong>
+            {isInternational ? "はい（週28時間まで）" : "いいえ"}
           </li>
           <li>
             <strong>雇用形態：</strong>
