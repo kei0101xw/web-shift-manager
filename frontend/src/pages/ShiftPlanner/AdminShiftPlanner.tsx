@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
 import "./AdminShiftPlanner.css";
-import { mockApi } from "../../mocks/mockApi";
 import { useShiftPlan } from "./ShiftPlanContext";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../lib/api";
@@ -30,6 +29,7 @@ function halfMonthRange(y: number, m: number, half: "H1" | "H2") {
   const e = new Date(y, m - 1, half === "H1" ? 15 : last);
   return { start: s, end: e };
 }
+
 const toHM = (iso: string) => {
   const d = new Date(iso);
   return `${String(d.getHours()).padStart(2, "0")}:${String(
@@ -124,7 +124,7 @@ export default function AdminShiftPlanner() {
   }, [gaps]);
 
   // コンテキスト：確定編集
-  const { grid, setDecision } = useShiftPlan();
+  const { grid, setDecision, clearAll } = useShiftPlan();
 
   // モーダル
   const [modal, setModal] = useState<{
@@ -143,19 +143,27 @@ export default function AdminShiftPlanner() {
     isOff: false,
   });
 
-  // ロード（モック：従業員 & 希望）
   useEffect(() => {
     (async () => {
       setLoading(true);
       setError("");
       try {
-        const [emps, av] = await Promise.all([
-          mockApi.listEmployees(),
-          mockApi.listAvailability(
-            `${ymdJST(start)}T00:00:00${JST}`,
-            `${ymdJST(end)}T23:59:59${JST}`
-          ),
+        const [empsRes, avRes] = await Promise.all([
+          api.get("/employees"),
+          api.get("/availability", {
+            params: {
+              from: `${ymdJST(start)}T00:00:00${JST}`,
+              to: `${ymdJST(end)}T23:59:59${JST}`,
+            },
+          }),
         ]);
+        const emps = Array.isArray((empsRes as any).data)
+          ? (empsRes as any).data
+          : (empsRes as any);
+        const av = Array.isArray((avRes as any).data)
+          ? (avRes as any).data
+          : (avRes as any);
+
         const actives = emps.filter((e: Employee) => e.status === "active");
         setEmployees(actives);
 
@@ -182,14 +190,17 @@ export default function AdminShiftPlanner() {
   useEffect(() => {
     (async () => {
       try {
-        const data = await api.get("/gaps", {
+        const gapsRes = await api.get("/gaps", {
           params: {
             from: `${ymdJST(start)}T00:00:00${JST}`,
             to: `${ymdJST(end)}T23:59:59${JST}`,
             role_id: roleFilter,
           },
         });
-        setGaps(Array.isArray(data) ? data : []);
+        const gaps = Array.isArray((gapsRes as any).data)
+          ? (gapsRes as any).data
+          : (gapsRes as any);
+        setGaps(Array.isArray(gaps) ? gaps : []);
       } catch {
         setGaps([]);
       }
@@ -242,7 +253,7 @@ export default function AdminShiftPlanner() {
         type: "work",
         start: modal.startHHMM,
         end: modal.endHHMM,
-        role_id: roleFilter,
+        role_id: modal.roleId,
       });
     }
     setModal((m) => ({ ...m, open: false }));
@@ -294,24 +305,193 @@ export default function AdminShiftPlanner() {
       alert("作成対象がありません。セルを編集してから実行してください。");
       return;
     }
+    if (!window.confirm("シフトを確定してもよろしいですか？")) return;
 
-    const ok = window.confirm("シフトを確定してもよろしいですか？");
-    if (!ok) return;
+    // 1) 日付レンジ（JST）を算出
+    const allDates = Array.from(new Set(items.map((i) => i.date))).sort();
+    const from = `${allDates[0]}T00:00:00+09:00`;
+    const to = `${allDates[allDates.length - 1]}T23:59:59+09:00`;
 
-    // ---- ここは「モック」実行（後で実APIに差し替えやすいように）----
+    // 2) “work” のみ集計して (start,end,role_id) の必要個数を把握
+    type WorkKey = `${string}T${string}|${string}T${string}`; // startISO|endISO
+    const toIso = (d: string, hhmm: string) => `${d}T${hhmm}:00+09:00`;
+
+    const workItems = items.filter((i) => i.type === "work") as Array<
+      Required<
+        Pick<(typeof items)[number], "date" | "employee_id" | "start" | "end">
+      > & { role_id?: number }
+    >;
+
+    // 枠のユニーク化＆ロール別人数
+    const bucketByShift = new Map<
+      WorkKey,
+      { startISO: string; endISO: string; roles: Map<number, number> }
+    >();
+    for (const w of workItems) {
+      const startISO = toIso(w.date, w.start!);
+      const endISO = toIso(w.date, w.end!);
+      const key = `${startISO}|${endISO}` as WorkKey;
+      const roleId = w.role_id ?? roleFilter; // 保険
+      const b = bucketByShift.get(key) || {
+        startISO,
+        endISO,
+        roles: new Map<number, number>(),
+      };
+      b.roles.set(roleId, (b.roles.get(roleId) ?? 0) + 1);
+      bucketByShift.set(key, b);
+    }
+
     try {
-      // 例：バリデーションしたいときはここで /assignments/validate を呼ぶ想定
-      // await api.post("/assignments/validate", { candidates: ... });
+      // 3) 既存のシフトを取得
+      const shiftsResp = await api.get("/shifts", {
+        params: { from, to, with_requirements: true },
+      });
+      const shiftsData = Array.isArray((shiftsResp as any).data)
+        ? (shiftsResp as any).data
+        : (shiftsResp as any);
+      type ShiftRow = {
+        id: number;
+        start_time: string;
+        end_time: string;
+        requirements: { role_id: number; capacity: number }[];
+      };
+      const existing: ShiftRow[] = Array.isArray(shiftsData) ? shiftsData : [];
 
-      // モック送信（演出）
-      await new Promise((r) => setTimeout(r, 600));
-      alert("シフトを作成しました。（モック）");
+      const byStartEnd = new Map<
+        WorkKey,
+        { id: number; reqRoles: Set<number> }
+      >();
+      for (const s of existing) {
+        const k = `${s.start_time}|${s.end_time}` as WorkKey;
+        byStartEnd.set(k, {
+          id: s.id,
+          reqRoles: new Set(s.requirements?.map((r) => r.role_id) ?? []),
+        });
+      }
+
+      // 4) 無い枠は /shifts で作成（requirements も同時に）
+      const ensuredShiftId = new Map<WorkKey, number>();
+      for (const [k, b] of bucketByShift.entries()) {
+        if (byStartEnd.has(k)) {
+          ensuredShiftId.set(k, byStartEnd.get(k)!.id);
+          continue;
+        }
+        // この枠に必要なロールと人数（最低1以上）を requirements として送る
+        const requirements = Array.from(b.roles.entries()).map(
+          ([role_id, cnt]) => ({ role_id, capacity: Math.max(1, cnt) })
+        );
+        const created = await api.post("/shifts", {
+          start_time: b.startISO,
+          end_time: b.endISO,
+          requirements, // サーバ側で on conflict (shift_id, role_id) upsert 済
+        });
+        ensuredShiftId.set(k, created.id);
+      }
+
+      // 5) assignments を POST（role の要件が無い既存枠は弾いてエラー表示）
+      const errors: string[] = [];
+      for (const w of workItems) {
+        const startISO = toIso(w.date, w.start!);
+        const endISO = toIso(w.date, w.end!);
+        const k = `${startISO}|${endISO}` as WorkKey;
+
+        const shift_id = ensuredShiftId.get(k) ?? byStartEnd.get(k)?.id;
+        if (!shift_id) {
+          errors.push(
+            `シフト枠が見つかりません: ${w.date} ${w.start}-${w.end}`
+          );
+          continue;
+        }
+
+        const roleId = w.role_id ?? roleFilter;
+        // 既存枠の場合、その役割の要件行が無いと /assignments がエラーになる
+        if (byStartEnd.has(k)) {
+          const reqRoles = byStartEnd.get(k)!.reqRoles;
+          if (!reqRoles.has(roleId)) {
+            errors.push(
+              `要件未設定の役割です: ${w.date} ${w.start}-${w.end} role_id=${roleId}`
+            );
+            continue;
+          }
+        }
+
+        try {
+          await api.post("/assignments", {
+            shift_id,
+            employee_id: w.employee_id,
+            role_id: roleId,
+          });
+        } catch (e: any) {
+          // バリデーションの詳細（overlap, weekly_cap 等）はサーバが返す
+          errors.push(
+            `割当失敗: emp=${w.employee_id} ${w.date} ${w.start}-${w.end} (role=${roleId})`
+          );
+        }
+      }
+
+      // 6) “休” の処理：当日の既存割当をキャンセル
+      const offItems = items.filter((i) => i.type === "off");
+      for (const off of offItems) {
+        try {
+          // 当日の割当一覧を取得して cancel に更新
+          const listRes = await api.get("/assignments", {
+            params: {
+              employee_id: off.employee_id,
+              from: `${off.date}T00:00:00+09:00`,
+              to: `${off.date}T23:59:59+09:00`,
+            },
+          });
+          const list = Array.isArray((listRes as any).data)
+            ? (listRes as any).data
+            : (listRes as any);
+          for (const a of list as any[]) {
+            if (a.status !== "assigned") continue;
+            await api.patch(`/assignments/${a.id}`, { status: "canceled" });
+          }
+        } catch {
+          errors.push(`休の反映失敗: emp=${off.employee_id} ${off.date}`);
+        }
+      }
+
+      if (errors.length) {
+        alert(`一部反映できませんでした。\n\n${errors.join("\n")}`);
+        return;
+      }
+
+      alert("シフトを確定しました。");
       nav("/managerhome");
-
-      // 必要なら、送信後に画面をリセット or 再読込：
-      // location.reload();
     } catch (e) {
+      console.error(e);
       alert("作成に失敗しました。時間をおいて再度お試しください。");
+    }
+  }
+
+  // 申請から下書き(grid)へ一括コピー（現在選択中ロールで仮入力）
+  function prefillFromAvailability(roleId: number) {
+    for (const emp of employees) {
+      for (const d of days) {
+        const key = ymd(d);
+        // すでに下書きがあれば触らない
+        if (grid[emp.id]?.[key]) continue;
+
+        const reqs = serverMap[emp.id]?.[key] ?? [];
+        if (!reqs.length) continue;
+
+        // 最初の申請を採用（必要なら最長/最短等にルール変更可）
+        const s = new Date(reqs[0].start_time);
+        const e = new Date(reqs[0].end_time);
+        const startHH = String(s.getHours()).padStart(2, "0");
+        const startMM = String(s.getMinutes()).padStart(2, "0");
+        const endHH = String(e.getHours()).padStart(2, "0");
+        const endMM = String(e.getMinutes()).padStart(2, "0");
+
+        setDecision(emp.id, key, {
+          type: "work",
+          start: `${startHH}:${startMM}`,
+          end: `${endHH}:${endMM}`,
+          role_id: roleId,
+        });
+      }
     }
   }
 
@@ -364,8 +544,12 @@ export default function AdminShiftPlanner() {
             <option value="H2">後半(16–末)</option>
           </select>
         </label>
+        <button onClick={() => prefillFromAvailability(roleFilter)}>
+          申請を仮入力
+        </button>
+        <button onClick={() => clearAll()}>全クリア</button>
         <button className="primary" onClick={handleCreate}>
-          + この内容でシフト作成 +{" "}
+          この内容でシフト作成
         </button>
       </div>
 
@@ -501,6 +685,24 @@ export default function AdminShiftPlanner() {
 
             {!modal.isOff && (
               <>
+                <div className="modalRow">
+                  <label>役割：</label>
+                  <select
+                    value={modal.roleId}
+                    onChange={(e) =>
+                      setModal((m) => ({
+                        ...m,
+                        roleId: Number(e.target.value),
+                      }))
+                    }
+                  >
+                    {ROLES.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <div className="modalRow">
                   <label>開始：</label>
                   <input
