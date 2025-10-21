@@ -78,10 +78,10 @@ const ManagerHome = () => {
               <img src={money} alt="ロゴ画像" className="money-logo" />
             </button>
             <button
-              className="employee-delete-button"
-              onClick={() => navigate("/deleteemployee")}
+              className="employee-list-button"
+              onClick={() => navigate("/employees")}
             >
-              <div className="employee-delete-sentence">従業人の削除</div>
+              <div className="employee-delete-sentence">従業員一覧</div>
               <img src={money} alt="ロゴ画像" className="money-logo" />
             </button>
           </div>
