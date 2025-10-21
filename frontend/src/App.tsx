@@ -76,7 +76,7 @@ function App() {
             />
             <Route path="/shiftmanage" element={<ShiftManage />} />
             <Route
-              path="/employees/:employeeId/delete-confirm"
+              path="/employees/:employeeId/delete"
               element={<EmployeeDeleteConfirm />}
             />
             <Route
