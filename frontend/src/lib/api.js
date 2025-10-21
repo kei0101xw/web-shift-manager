@@ -13,7 +13,7 @@ function buildQuery(params) {
 
 async function request(
   path,
-  { method = "GET", headers = {}, body, params } = {}
+  { method = "GET", headers = {}, body, params, signal } = {}
 ) {
   const token = localStorage.getItem("token");
   const res = await fetch(`${BASE}${path}${buildQuery(params)}`, {
@@ -24,6 +24,7 @@ async function request(
       ...headers,
     },
     body: body ? JSON.stringify(body) : undefined,
+    signal,
   });
 
   if (res.status === 401) {
