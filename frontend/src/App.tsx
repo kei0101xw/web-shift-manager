@@ -16,10 +16,9 @@ import NotFound from "./pages/NotFound/NotFound";
 import EmployeeList from "./pages/EmployeeList/EmployeeList";
 import EmployeeDetail from "./pages/EmployeeDetail/EmployeeDetail";
 import EmployeeEdit from "./pages/EmployeeEdit/EmployeeEdit";
-import EmployeeDeleteConfirm from "./pages/EmployeeDeleteConfirm/EmployeeDeleteConfirm";
+import DeleteEmployeeConfirm from "./pages/DeleteEmployeeConfirm/DeleteEmployeeConfirm";
 import Header from "./components/Header";
 import ManagerHome from "./pages/ManagerHome/ManagerHome";
-import DeleteEmployee from "./pages/DeleteEmployee/DeleteEmployee";
 import ShiftApplyConfirm from "./pages/ShiftApplyConfirm/ShiftApplyConfirm";
 import Ping from "./pages/Ping";
 import { ShiftPlanProvider } from "./pages/ShiftPlanner/ShiftPlanContext";
@@ -76,17 +75,16 @@ function App() {
             />
             <Route path="/shiftmanage" element={<ShiftManage />} />
             <Route
-              path="/employees/:employeeId/delete"
-              element={<EmployeeDeleteConfirm />}
-            />
-            <Route
               path="/employees/:employeeId/edit"
               element={<EmployeeEdit />}
             />
             <Route path="/employees/:id" element={<EmployeeDetail />} />
+            <Route
+              path="/employees/:id/delete/confirm"
+              element={<DeleteEmployeeConfirm />}
+            />
             <Route path="/registeremployee" element={<RegisterEmployee />} />
             <Route path="/confirmemployee" element={<ConfirmEmployee />} />
-            <Route path="/deleteemployee" element={<DeleteEmployee />} />
           </Route>
         </Route>
       </Route>
