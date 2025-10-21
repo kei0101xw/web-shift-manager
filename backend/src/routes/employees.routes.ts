@@ -30,12 +30,53 @@ const UpdateEmployeeSchema = z
   .partial(); // .partial()ですべてのフィールドを任意に
 
 /** GET /api/v1/employees */
-employeesRouter.get("/", async (_req, res) => {
+employeesRouter.get("/", async (req, res) => {
   try {
-    const rows = await query<{ id: number; name: string; status: string }>(
-      `select id, name, status from employees order by id asc`
+    const includeDeleted =
+      String(req.query.include_deleted ?? "false") === "true";
+    const orderParam = String(req.query.order ?? "name_asc");
+    const rawLimit = Number(req.query.limit);
+    const limit = Number.isFinite(rawLimit) ? Math.min(rawLimit, 500) : 100;
+
+    const ORDER: Record<string, string> = {
+      name_asc: "name ASC",
+      name_desc: "name DESC",
+      id_asc: "id ASC",
+      id_desc: "id DESC",
+    };
+    const orderBy = ORDER[orderParam] ?? ORDER.name_asc;
+
+    const rows = await query<{
+      id: number;
+      employee_code: string;
+      name: string;
+      work_area: string | null;
+      employment_type: "full_time" | "part_time" | "baito";
+    }>(
+      `
+      SELECT id, employee_code, name, work_area, employment_type
+        FROM employees
+       WHERE $1::boolean = true OR deleted_at IS NULL
+       ORDER BY ${orderBy}
+       LIMIT $2
+      `,
+      [includeDeleted, limit]
     );
-    res.json(rows);
+
+    const payload = rows.map((r) => ({
+      id: r.id,
+      employeeId: r.employee_code, // フロントの型に合わせる
+      name: r.name,
+      workArea: r.work_area ?? undefined,
+      role:
+        r.employment_type === "full_time"
+          ? "社員"
+          : r.employment_type === "part_time"
+          ? "パート"
+          : "アルバイト",
+    }));
+
+    res.json(payload);
   } catch (e) {
     sendPgError(res, e);
   }
@@ -45,17 +86,38 @@ employeesRouter.get("/", async (_req, res) => {
 employeesRouter.get("/:id", async (req, res) => {
   try {
     const id = z.coerce.number().int().positive().parse(req.params.id);
+    const includeDeleted =
+      String(req.query.include_deleted ?? "false") === "true";
     const rows = await query(
       `
-      select id, employee_code, name, status, employment_type,
-             hourly_wage::float8 as hourly_wage, weekly_hour_cap
-        from employees
-       where id = $1
-    `,
+  SELECT id, employee_code, name, status, employment_type,
+         work_area, hourly_wage::float8 AS hourly_wage, weekly_hour_cap,
+         deleted_at
+    FROM employees
+   WHERE id = $1
+  `,
       [id]
     );
     if (!rows.length) return res.status(404).json({ error: "not_found" });
-    res.json(rows[0]);
+    const r = rows[0];
+    if (!includeDeleted && r.deleted_at)
+      return res.status(404).json({ error: "not_found" });
+
+    res.json({
+      id: r.id,
+      employeeId: r.employee_code,
+      name: r.name,
+      status: r.status,
+      role:
+        r.employment_type === "full_time"
+          ? "社員"
+          : r.employment_type === "part_time"
+          ? "パート"
+          : "アルバイト",
+      workArea: r.work_area ?? null,
+      hourly_wage: r.hourly_wage,
+      weekly_hour_cap: r.weekly_hour_cap,
+    });
   } catch (e) {
     sendPgError(res, e);
   }
