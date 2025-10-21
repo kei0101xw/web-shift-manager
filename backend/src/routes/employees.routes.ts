@@ -16,6 +16,7 @@ const CreateEmployeeSchema = z.object({
     .default("active"),
   is_international_student: z.boolean().default(false),
   roles_by_code: z.array(z.string().min(1)).optional().default([]),
+  work_area: z.enum(["キッチン", "ホール", "キッチン&ホール"]),
 });
 
 const UpdateEmployeeSchema = z
@@ -26,6 +27,7 @@ const UpdateEmployeeSchema = z
     hourly_wage: z.number().min(0).nullable(),
     is_international_student: z.boolean(),
     weekly_hour_cap: z.number().int().min(1).max(84).nullable(),
+    work_area: z.enum(["キッチン", "ホール", "キッチン&ホール"]).nullable(),
   })
   .partial(); // .partial()ですべてのフィールドを任意に
 
@@ -133,6 +135,7 @@ employeesRouter.post("/", async (req, res) => {
       status,
       is_international_student,
       roles_by_code,
+      work_area,
     } = CreateEmployeeSchema.parse(req.body);
 
     const password_hash = await bcrypt.hash(password, 10);
@@ -158,9 +161,9 @@ employeesRouter.post("/", async (req, res) => {
       const {
         rows: [employee],
       } = await c.query(
-        `insert into employees (user_id, name, employee_code, hire_date, status, employment_type, is_international_student, weekly_hour_cap)
-         values ($1, $2, $3, now()::date, $4, $5, $6, $7)
-         returning id, employee_code, name, status, employment_type`,
+        `insert into employees (user_id, name, employee_code, hire_date, status, employment_type, is_international_student, weekly_hour_cap, work_area)
+         values ($1, $2, $3, now()::date, $4, $5, $6, $7, $8)
+         returning id, employee_code, name, status, employment_type, work_area`,
         [
           user_id,
           name,
@@ -169,6 +172,7 @@ employeesRouter.post("/", async (req, res) => {
           employment_type,
           is_international_student,
           weekly_hour_cap,
+          work_area,
         ]
       );
 
