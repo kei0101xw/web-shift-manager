@@ -49,15 +49,17 @@ employeesRouter.get("/", async (req, res) => {
     };
     const orderBy = ORDER[orderParam] ?? ORDER.name_asc;
 
-    const rows = await query<{
+    type Row = {
       id: number;
       employee_code: string;
       name: string;
+      status: "active" | "inactive" | "suspended"; // ★ 追加
       work_area: string | null;
       employment_type: "full_time" | "part_time" | "baito";
-    }>(
+    };
+    const rows = await query<Row>(
       `
-      SELECT id, employee_code, name, work_area, employment_type
+      SELECT id, employee_code, name, status, work_area, employment_type
         FROM employees
        WHERE $1::boolean = true OR deleted_at IS NULL
        ORDER BY ${orderBy}
@@ -70,6 +72,7 @@ employeesRouter.get("/", async (req, res) => {
       id: r.id,
       employeeId: r.employee_code, // フロントの型に合わせる
       name: r.name,
+      status: r.status,
       workArea: r.work_area ?? undefined,
       role:
         r.employment_type === "full_time"
