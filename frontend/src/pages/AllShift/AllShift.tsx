@@ -41,7 +41,12 @@ const toHM = (iso: string) => {
 };
 
 // ========= 行列構築ユーティリティ =========
-function buildMatrix(items: UiItem[], startDay: number, endDay: number, viewMonth: Date) {
+function buildMatrix(
+  items: UiItem[],
+  startDay: number,
+  endDay: number,
+  viewMonth: Date
+) {
   // dayKeys: ['YYYY-MM-01', ...]
   const dayKeys: string[] = [];
   for (let d = startDay; d <= endDay; d++) {
@@ -112,8 +117,9 @@ export default function AllShift() {
           },
         });
 
-        const normalized: UiItem[] = (Array.isArray(rows) ? rows : []).map(
-          (r: any, i: number) => ({
+        const normalized: UiItem[] = (Array.isArray(rows) ? rows : [])
+          .filter((r: any) => !r.employee_deleted_at)
+          .map((r: any, i: number) => ({
             id: r.id ?? `${r.shift_id}-${r.employee_id}-${i}`,
             employeeId: r.employee_id,
             employeeName: r.employee_name ?? "不明",
@@ -128,8 +134,7 @@ export default function AllShift() {
                 : r.status === "rejected"
                 ? "rejected"
                 : "approved",
-          })
-        );
+          }));
 
         if (!cancelled) setItems(normalized);
       } catch (e: any) {
