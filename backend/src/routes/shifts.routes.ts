@@ -31,6 +31,11 @@ const CreateShiftSchema = z
     { path: ["requirements"], message: "requirements.role_id must be unique" }
   );
 
+const UpsertRequirementSchema = z.object({
+  role_id: z.number().int().positive(),
+  capacity: z.number().int().min(1),
+});
+
 shiftsRouter.post("/", async (req, res, next) => {
   try {
     const body = CreateShiftSchema.parse(req.body);
@@ -95,6 +100,43 @@ shiftsRouter.post("/", async (req, res, next) => {
     });
 
     res.status(201).location(`/api/v1/shifts/${result.id}`).json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
+shiftsRouter.post("/:id/requirements", async (req, res, next) => {
+  try {
+    const shiftId = z.coerce.number().int().parse(req.params.id);
+    const { role_id, capacity } = UpsertRequirementSchema.parse(req.body);
+
+    const result = await withTx(async (c) => {
+      const { rowCount: exists } = await c.query(
+        `select 1 from shifts where id = $1`,
+        [shiftId]
+      );
+      if (!exists) {
+        throw {
+          name: "BadRequest",
+          message: "shift_not_found",
+          meta: { shift_id: shiftId },
+        };
+      }
+
+      const {
+        rows: [row],
+      } = await c.query(
+        `insert into shift_requirements (shift_id, role_id, capacity)
+         values ($1,$2,$3)
+         on conflict (shift_id, role_id) do update
+           set capacity = excluded.capacity
+         returning shift_id, role_id, capacity`,
+        [shiftId, role_id, capacity]
+      );
+      return row;
+    });
+
+    res.status(201).json(result);
   } catch (err) {
     next(err);
   }
