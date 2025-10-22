@@ -16,14 +16,15 @@ const GetAssignmentsQuery = z
   .object({
     employee_id: z.coerce.number().int().optional(),
     role_id: z.coerce.number().int().optional(),
-    role_code: z.string().max(30).optional(), // "kitchen" / "hall"
+    role_code: z.string().max(30).optional(),
     from: IsoTz.optional(),
     to: IsoTz.optional(),
     period: z
       .string()
       .regex(/^\d{4}-\d{2}-(H1|H2)$/)
-      .optional(), // "2025-10-H1"
-    with_people: z.coerce.boolean().default(false), // 氏名/ロール名も返す？
+      .optional(),
+    with_people: z.coerce.boolean().default(false),
+    include_deleted: z.coerce.boolean().default(false), // ★追加
     page: z.coerce.number().int().min(1).default(1),
     limit: z.coerce.number().int().min(1).max(1000).default(200),
   })
@@ -69,6 +70,84 @@ function halfMonthRangeJST(period: string) {
   const to = `${yStr}-${moStr}-${pad(toDay)}T23:59:59+09:00`;
   return { from, to };
 }
+
+assignmentsRouter.get("/", async (req, res) => {
+  try {
+    const q = GetAssignmentsQuery.parse(req.query);
+
+    // period → from/to に展開（JST）
+    let from = q.from,
+      to = q.to;
+    if (q.period) {
+      const r = halfMonthRangeJST(q.period);
+      if (!r) return res.status(400).json({ error: "bad_period" });
+      from = r.from;
+      to = r.to;
+    }
+
+    const params: any[] = [];
+    const wh: string[] = [];
+
+    if (from) {
+      params.push(from);
+      wh.push(`s.start_time >= $${params.length}::timestamptz`);
+    }
+    if (to) {
+      params.push(to);
+      wh.push(`s.end_time   <= $${params.length}::timestamptz`);
+    }
+    if (q.employee_id) {
+      params.push(q.employee_id);
+      wh.push(`sa.employee_id = $${params.length}`);
+    }
+    if (q.role_id) {
+      params.push(q.role_id);
+      wh.push(`sa.role_id     = $${params.length}`);
+    }
+
+    // role_code 指定時は roles をJOIN
+    const joinRoles = q.with_people || !!q.role_code;
+    if (q.role_code) {
+      params.push(q.role_code);
+      wh.push(`r.code = $${params.length}`);
+    }
+
+    const offset = (q.page - 1) * q.limit;
+    params.push(q.limit, offset, q.include_deleted);
+
+    const sql = `
+      select
+        sa.id, sa.shift_id, sa.employee_id,
+        ${q.with_people ? "e.name as employee_name," : ""}
+        sa.role_id
+        ${joinRoles ? ", r.code as role_code, r.name as role_name" : ""}
+        , s.start_time, s.end_time
+        , round(extract(epoch from (s.end_time - s.start_time))/3600.0, 2)::float8 as hours
+        , sa.status
+      from shift_assignments sa
+      join shifts s on s.id = sa.shift_id
+      join employees e on e.id = sa.employee_id 
+      ${joinRoles ? "join roles r on r.id = sa.role_id" : ""}
+      ${
+        wh.length
+          ? "where " +
+            wh.join(" and ") +
+            " and ($" +
+            params.length +
+            "::boolean = true or e.deleted_at is null)"
+          : "where ($" +
+            params.length +
+            "::boolean = true or e.deleted_at is null)" // ★ 削除除外条件を必ず入れる
+      }
+      order by s.start_time, sa.role_id, sa.employee_id
+      limit $${params.length - 2} offset $${params.length - 1}
+    `;
+    const { rows } = await pool.query(sql, params);
+    res.json(rows);
+  } catch (err) {
+    return sendPgError(res, err);
+  }
+});
 
 assignmentsRouter.post("/", async (req, res, next) => {
   try {
@@ -225,114 +304,6 @@ assignmentsRouter.post("/", async (req, res, next) => {
   }
 });
 
-assignmentsRouter.get("/", async (req, res) => {
-  try {
-    const q = GetAssignmentsQuery.parse(req.query);
-
-    // period → from/to に展開（JST）
-    let from = q.from,
-      to = q.to;
-    if (q.period) {
-      const r = halfMonthRangeJST(q.period);
-      if (!r) return res.status(400).json({ error: "bad_period" });
-      from = r.from;
-      to = r.to;
-    }
-
-    const params: any[] = [];
-    const wh: string[] = [];
-
-    if (from) {
-      params.push(from);
-      wh.push(`s.start_time >= $${params.length}::timestamptz`);
-    }
-    if (to) {
-      params.push(to);
-      wh.push(`s.end_time   <= $${params.length}::timestamptz`);
-    }
-    if (q.employee_id) {
-      params.push(q.employee_id);
-      wh.push(`sa.employee_id = $${params.length}`);
-    }
-    if (q.role_id) {
-      params.push(q.role_id);
-      wh.push(`sa.role_id     = $${params.length}`);
-    }
-
-    // role_code 指定時は roles をJOIN
-    const joinRoles = q.with_people || !!q.role_code;
-    if (q.role_code) {
-      params.push(q.role_code);
-      wh.push(`r.code = $${params.length}`);
-    }
-
-    const offset = (q.page - 1) * q.limit;
-    params.push(q.limit, offset);
-
-    const sql = `
-      select
-        sa.id, sa.shift_id, sa.employee_id,
-        ${q.with_people ? "e.name as employee_name," : ""}
-        sa.role_id
-        ${joinRoles ? ", r.code as role_code, r.name as role_name" : ""}
-        , s.start_time, s.end_time
-        , round(extract(epoch from (s.end_time - s.start_time))/3600.0, 2)::float8 as hours
-        , sa.status
-      from shift_assignments sa
-      join shifts s on s.id = sa.shift_id
-      ${q.with_people ? "join employees e on e.id = sa.employee_id" : ""}
-      ${joinRoles ? "join roles r on r.id = sa.role_id" : ""}
-      ${wh.length ? "where " + wh.join(" and ") : ""}
-      order by s.start_time, sa.role_id, sa.employee_id
-      limit $${params.length - 1} offset $${params.length}
-    `;
-    const { rows } = await pool.query(sql, params);
-    res.json(rows);
-  } catch (err) {
-    return sendPgError(res, err);
-  }
-});
-
-assignmentsRouter.patch("/:id", async (req, res) => {
-  try {
-    const id = z.coerce.number().int().parse(req.params.id);
-    const { status } = PatchAssignmentSchema.parse(req.body);
-
-    const {
-      rows: [row],
-    } = await pool.query(
-      `update shift_assignments set status=$1 where id=$2
-       returning id, shift_id, employee_id, role_id, status`,
-      [status, id]
-    );
-    if (!row) {
-      return res.status(404).json({ error: "not_found" });
-    }
-    res.json(row);
-  } catch (err) {
-    if (err instanceof z.ZodError) {
-      return res
-        .status(422)
-        .json({ error: "validation_error", issues: err.issues });
-    }
-    return sendPgError(res, err);
-  }
-});
-
-assignmentsRouter.delete("/:id", async (req, res) => {
-  try {
-    const id = z.coerce.number().int().parse(req.params.id);
-    const { rowCount } = await pool.query(
-      `delete from shift_assignments where id=$1`,
-      [id]
-    );
-    if (!rowCount) return res.status(404).json({ error: "not_found" });
-    res.status(204).send();
-  } catch (err) {
-    return sendPgError(res, err);
-  }
-});
-
 /** ---------- POST /assignments/validate （事前検証・警告のみ） ---------- */
 assignmentsRouter.post("/validate", async (req, res) => {
   try {
@@ -485,6 +456,46 @@ assignmentsRouter.post("/validate", async (req, res) => {
         .status(422)
         .json({ error: "validation_error", issues: err.issues });
     }
+    return sendPgError(res, err);
+  }
+});
+
+assignmentsRouter.patch("/:id", async (req, res) => {
+  try {
+    const id = z.coerce.number().int().parse(req.params.id);
+    const { status } = PatchAssignmentSchema.parse(req.body);
+
+    const {
+      rows: [row],
+    } = await pool.query(
+      `update shift_assignments set status=$1 where id=$2
+       returning id, shift_id, employee_id, role_id, status`,
+      [status, id]
+    );
+    if (!row) {
+      return res.status(404).json({ error: "not_found" });
+    }
+    res.json(row);
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      return res
+        .status(422)
+        .json({ error: "validation_error", issues: err.issues });
+    }
+    return sendPgError(res, err);
+  }
+});
+
+assignmentsRouter.delete("/:id", async (req, res) => {
+  try {
+    const id = z.coerce.number().int().parse(req.params.id);
+    const { rowCount } = await pool.query(
+      `delete from shift_assignments where id=$1`,
+      [id]
+    );
+    if (!rowCount) return res.status(404).json({ error: "not_found" });
+    res.status(204).send();
+  } catch (err) {
     return sendPgError(res, err);
   }
 });
