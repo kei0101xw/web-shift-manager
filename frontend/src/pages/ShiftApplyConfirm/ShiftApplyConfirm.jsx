@@ -38,7 +38,6 @@ export default function ShiftConfirm() {
     setSubmitting(true);
     setError("");
     try {
-      // バックエンド想定エンドポイント:
       // POST /api/v1/me/availabilities/bulk
       // body: [{ date:"YYYY-MM-DD", start_time:"ISO+09:00", end_time:"ISO+09:00", note?:string }]
       const body = payload.map((p) => ({
@@ -49,12 +48,26 @@ export default function ShiftConfirm() {
       }));
 
       // 成功時 201 or 200 を想定
-      await api.post("/me/availabilities/bulk", body);
+      const res = await api.post("/me/availabilities/bulk", body);
+      const inserted =
+        res?.inserted_or_upserted ?? res?.data?.inserted_or_upserted ?? 0;
+      if (inserted <= 0) {
+        setError(
+          "申請が保存できませんでした。時間をおいて再度お試しください。"
+        );
+        return;
+      }
 
       alert("申請を送信しました！");
       navigate("/home");
     } catch (e) {
-      const code = e?.error ?? e?.data?.error; // APIが返す error コード
+      // APIが返すエラーコードや検証エラーを吸い上げる
+      const code =
+        e?.error ??
+        e?.data?.error ??
+        e?.response?.data?.error ??
+        e?.response?.data?.code;
+      const issues = e?.response?.data?.issues; // zod の validation_error など
       const msg =
         code === "time_overlap"
           ? "申請した時間帯が重なっています。時間を調整して再送信してください。"
@@ -65,7 +78,13 @@ export default function ShiftConfirm() {
           : e?.status === 403
           ? "権限がありません（403）。"
           : e?.status === 422
-          ? "入力が不正です。時間帯や日付を確認してください。"
+          ? `入力が不正です。時間帯や日付を確認してください。\n${
+              Array.isArray(issues)
+                ? issues
+                    .map((i) => `- ${i.path?.join(".")}: ${i.message}`)
+                    .join("\n")
+                : ""
+            }`
           : "送信に失敗しました。時間をおいて再度お試しください。";
       setError(msg);
     } finally {
