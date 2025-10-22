@@ -16,13 +16,14 @@ const ymdJST = (d: Date) =>
   }).format(d);
 
 const ymdFromISOJST = (iso: string) => ymdJST(new Date(iso));
-
 const ymd = (d: Date) => ymdJST(d);
+
 const addDays = (d: Date, n: number) => {
   const x = new Date(d);
   x.setDate(x.getDate() + n);
   return x;
 };
+
 function halfMonthRange(y: number, m: number, half: "H1" | "H2") {
   const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
   const s = new Date(y, m - 1, half === "H1" ? 1 : 16);
@@ -37,7 +38,7 @@ const toHM = (iso: string) => {
   ).padStart(2, "0")}`;
 };
 
-// 同一時間帯（start/end一致）を合算
+// 同一時間帯（start/end一致）を合算（不足ツールチップ用）
 function aggregateByTime(list: Gap[]) {
   const map = new Map<
     string,
@@ -75,11 +76,36 @@ type Gap = {
   gap: number;
 };
 
+type ShiftKey = string; // エポックミリ秒で作るキー
+
 // 役割（IDはバックエンドに合わせる）
 const ROLES = [
   { id: 1, label: "キッチン" },
   { id: 2, label: "ホール" },
 ];
+
+function describeApiError(err: any) {
+  if (!err) return "unknown";
+
+  const data = err.data ?? err.response?.data;
+  if (data) {
+    if (typeof data === "string") return data;
+    if (typeof data === "object") {
+      const parts: string[] = [];
+      if (data.error) parts.push(String(data.error));
+      if (data.meta) parts.push(`meta=${JSON.stringify(data.meta)}`);
+      if (data.detail) parts.push(`detail=${String(data.detail)}`);
+      if (parts.length) return parts.join(" ");
+      return JSON.stringify(data);
+    }
+  }
+
+  if (err.status && err.statusText)
+    return `${err.status} ${err.statusText}`;
+  if (err.status) return `status=${err.status}`;
+  if (err.message) return err.message;
+  return "unknown";
+}
 
 export default function AdminShiftPlanner() {
   const nav = useNavigate();
@@ -87,6 +113,7 @@ export default function AdminShiftPlanner() {
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1);
   const [half, setHalf] = useState<"H1" | "H2">("H1");
+
   const { start, end } = useMemo(
     () => halfMonthRange(year, month, half),
     [year, month, half]
@@ -126,6 +153,10 @@ export default function AdminShiftPlanner() {
   // コンテキスト：確定編集
   const { grid, setDecision, clearAll } = useShiftPlan();
 
+  // キー生成はエポック（DBのISO文字列差異を排除）
+  const keyOf = (startISO: string, endISO: string): ShiftKey =>
+    `${new Date(startISO).getTime()}|${new Date(endISO).getTime()}`;
+
   // モーダル
   const [modal, setModal] = useState<{
     open: boolean;
@@ -143,6 +174,7 @@ export default function AdminShiftPlanner() {
     isOff: false,
   });
 
+  // 初期ロード
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -213,7 +245,7 @@ export default function AdminShiftPlanner() {
     let startHHMM = "09:00",
       endHHMM = "18:00",
       isOff = false,
-      roleId = roleFilter; // 現在の選択ロールで初期化
+      roleId = roleFilter;
 
     if (d?.type === "work") {
       startHHMM = d.start;
@@ -313,7 +345,6 @@ export default function AdminShiftPlanner() {
     const to = `${allDates[allDates.length - 1]}T23:59:59+09:00`;
 
     // 2) “work” のみ集計して (start,end,role_id) の必要個数を把握
-    type WorkKey = `${string}T${string}|${string}T${string}`; // startISO|endISO
     const toIso = (d: string, hhmm: string) => `${d}T${hhmm}:00+09:00`;
 
     const workItems = items.filter((i) => i.type === "work") as Array<
@@ -322,23 +353,24 @@ export default function AdminShiftPlanner() {
       > & { role_id?: number }
     >;
 
-    // 枠のユニーク化＆ロール別人数
+    // 枠のユニーク化＆ロール別人数（キーはエポックで統一）
     const bucketByShift = new Map<
-      WorkKey,
+      ShiftKey,
       { startISO: string; endISO: string; roles: Map<number, number> }
     >();
+
     for (const w of workItems) {
       const startISO = toIso(w.date, w.start!);
       const endISO = toIso(w.date, w.end!);
-      const key = `${startISO}|${endISO}` as WorkKey;
-      const roleId = w.role_id ?? roleFilter; // 保険
-      const b = bucketByShift.get(key) || {
+      const k = keyOf(startISO, endISO);
+      const roleId = w.role_id ?? roleFilter;
+      const b = bucketByShift.get(k) || {
         startISO,
         endISO,
         roles: new Map<number, number>(),
       };
       b.roles.set(roleId, (b.roles.get(roleId) ?? 0) + 1);
-      bucketByShift.set(key, b);
+      bucketByShift.set(k, b);
     }
 
     try {
@@ -349,6 +381,7 @@ export default function AdminShiftPlanner() {
       const shiftsData = Array.isArray((shiftsResp as any).data)
         ? (shiftsResp as any).data
         : (shiftsResp as any);
+
       type ShiftRow = {
         id: number;
         start_time: string;
@@ -358,11 +391,11 @@ export default function AdminShiftPlanner() {
       const existing: ShiftRow[] = Array.isArray(shiftsData) ? shiftsData : [];
 
       const byStartEnd = new Map<
-        WorkKey,
+        ShiftKey,
         { id: number; reqRoles: Set<number> }
       >();
       for (const s of existing) {
-        const k = `${s.start_time}|${s.end_time}` as WorkKey;
+        const k = keyOf(s.start_time, s.end_time);
         byStartEnd.set(k, {
           id: s.id,
           reqRoles: new Set(s.requirements?.map((r) => r.role_id) ?? []),
@@ -370,30 +403,81 @@ export default function AdminShiftPlanner() {
       }
 
       // 4) 無い枠は /shifts で作成（requirements も同時に）
-      const ensuredShiftId = new Map<WorkKey, number>();
+      const errors: string[] = [];
+      const ensuredShiftId = new Map<ShiftKey, number>();
       for (const [k, b] of bucketByShift.entries()) {
-        if (byStartEnd.has(k)) {
-          ensuredShiftId.set(k, byStartEnd.get(k)!.id);
+        const exist = byStartEnd.get(k);
+
+        if (exist) {
+          // 既存のシフトを採用し、必要な要件が欠けていれば追加
+          ensuredShiftId.set(k, exist.id);
+          for (const [roleId, cnt] of b.roles.entries()) {
+            if (exist.reqRoles.has(roleId)) continue;
+            try {
+              await api.post(`/shifts/${exist.id}/requirements`, {
+                role_id: roleId,
+                capacity: Math.max(1, cnt),
+              });
+              exist.reqRoles.add(roleId);
+            } catch (e: any) {
+              const detail = describeApiError(e);
+              errors.push(
+                `shift requirement追加失敗 (shift_id=${exist.id}, role_id=${roleId}) detail=${detail}`
+              );
+            }
+          }
+          ensuredShiftId.set(k, exist.id);
           continue;
         }
-        // この枠に必要なロールと人数（最低1以上）を requirements として送る
+
+        // ここまで来たら「まだ枠が無い」→新規作成
         const requirements = Array.from(b.roles.entries()).map(
           ([role_id, cnt]) => ({ role_id, capacity: Math.max(1, cnt) })
         );
-        const created = await api.post("/shifts", {
-          start_time: b.startISO,
-          end_time: b.endISO,
-          requirements, // サーバ側で on conflict (shift_id, role_id) upsert 済
+
+        console.debug("creating shift", {
+          key: k,
+          start: b.startISO,
+          end: b.endISO,
+          requirements,
         });
-        ensuredShiftId.set(k, created.id);
+
+        try {
+          const created = await api.post("/shifts", {
+            start_time: b.startISO,
+            end_time: b.endISO,
+            requirements,
+          });
+          console.debug("created shift id", created.id);
+
+          ensuredShiftId.set(k, created.id);
+          byStartEnd.set(k, {
+            id: created.id,
+            reqRoles: new Set(requirements.map((r) => r.role_id)),
+          });
+        } catch (e: any) {
+          // 409 = 既に同一枠あり → 既存IDを再利用
+          if (e?.response?.status === 409) {
+            console.warn("shift already exists, reuse existing id", { key: k });
+            const fallback = byStartEnd.get(k)?.id;
+            if (fallback) ensuredShiftId.set(k, fallback);
+          } else {
+            throw e;
+          }
+        }
       }
 
       // 5) assignments を POST（role の要件が無い既存枠は弾いてエラー表示）
-      const errors: string[] = [];
+      if (errors.length) {
+        alert(`一部反映できませんでした。\n\n${errors.join("\n")}`);
+        return;
+      }
+      const posted = new Set<string>(); // (shift_id, employee_id) の二重送信防止
+
       for (const w of workItems) {
         const startISO = toIso(w.date, w.start!);
         const endISO = toIso(w.date, w.end!);
-        const k = `${startISO}|${endISO}` as WorkKey;
+        const k = keyOf(startISO, endISO);
 
         const shift_id = ensuredShiftId.get(k) ?? byStartEnd.get(k)?.id;
         if (!shift_id) {
@@ -403,8 +487,13 @@ export default function AdminShiftPlanner() {
           continue;
         }
 
+        // 重複POST回避
+        const dupKey = `${shift_id}:${w.employee_id}`;
+        if (posted.has(dupKey)) continue;
+
         const roleId = w.role_id ?? roleFilter;
-        // 既存枠の場合、その役割の要件行が無いと /assignments がエラーになる
+
+        // 既存枠にその role の要件が無ければスキップ（サーバ側で400/409になる前に止める）
         if (byStartEnd.has(k)) {
           const reqRoles = byStartEnd.get(k)!.reqRoles;
           if (!reqRoles.has(roleId)) {
@@ -421,11 +510,13 @@ export default function AdminShiftPlanner() {
             employee_id: w.employee_id,
             role_id: roleId,
           });
+          posted.add(dupKey);
         } catch (e: any) {
-          // バリデーションの詳細（overlap, weekly_cap 等）はサーバが返す
+          const detail = describeApiError(e);
           errors.push(
-            `割当失敗: emp=${w.employee_id} ${w.date} ${w.start}-${w.end} (role=${roleId})`
+            `割当失敗: emp=${w.employee_id} ${w.date} ${w.start}-${w.end} (role=${roleId}) detail=${detail}`
           );
+          console.debug("assignment error payload", e);
         }
       }
 
@@ -433,7 +524,6 @@ export default function AdminShiftPlanner() {
       const offItems = items.filter((i) => i.type === "off");
       for (const off of offItems) {
         try {
-          // 当日の割当一覧を取得して cancel に更新
           const listRes = await api.get("/assignments", {
             params: {
               employee_id: off.employee_id,
@@ -448,8 +538,12 @@ export default function AdminShiftPlanner() {
             if (a.status !== "assigned") continue;
             await api.patch(`/assignments/${a.id}`, { status: "canceled" });
           }
-        } catch {
-          errors.push(`休の反映失敗: emp=${off.employee_id} ${off.date}`);
+        } catch (e) {
+          errors.push(
+            `休の反映失敗: emp=${off.employee_id} ${off.date} detail=${describeApiError(
+              e
+            )}`
+          );
         }
       }
 
@@ -471,13 +565,12 @@ export default function AdminShiftPlanner() {
     for (const emp of employees) {
       for (const d of days) {
         const key = ymd(d);
-        // すでに下書きがあれば触らない
-        if (grid[emp.id]?.[key]) continue;
+        if (grid[emp.id]?.[key]) continue; // 既に下書きがあれば触らない
 
         const reqs = serverMap[emp.id]?.[key] ?? [];
         if (!reqs.length) continue;
 
-        // 最初の申請を採用（必要なら最長/最短等にルール変更可）
+        // 最初の申請を採用
         const s = new Date(reqs[0].start_time);
         const e = new Date(reqs[0].end_time);
         const startHH = String(s.getHours()).padStart(2, "0");
@@ -499,7 +592,7 @@ export default function AdminShiftPlanner() {
     <div className="planner">
       <h1>シフト作成（管理者・編集）</h1>
 
-      {/* 役割切替：キッチン／ホールのみ */}
+      {/* 役割切替 */}
       <div className="roleFilters">
         {ROLES.map((r) => (
           <button
@@ -640,8 +733,8 @@ export default function AdminShiftPlanner() {
                     return (
                       <td
                         key={key}
-                        className={`cell ${cls} ${isOtherRole ? "locked" : ""}`} // ★見た目ロック
-                        onClick={isOtherRole ? undefined : () => openEdit(e, d)} // ★クリック無効
+                        className={`cell ${cls} ${isOtherRole ? "locked" : ""}`}
+                        onClick={isOtherRole ? undefined : () => openEdit(e, d)}
                         title={
                           isOtherRole
                             ? "別ロールで確定済み。ここでは編集できません。"
