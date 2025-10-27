@@ -10,10 +10,9 @@ const EmployeeEdit = () => {
   const [formData, setFormData] = useState(
     employee || {
       name: "",
-      email: "",
       employeeId: "",
       employmentPeliod: "",
-      workErea: "",
+      workArea: "",
       workingHours: 0,
       role: "",
       pass: "",
@@ -68,16 +67,6 @@ const EmployeeEdit = () => {
             />
           </label>
           <label className="employee-edit-label">
-            メールアドレス:
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="employee-edit-input"
-            />
-          </label>
-          <label className="employee-edit-label">
             従業員番号:
             <input
               type="text"
@@ -103,7 +92,7 @@ const EmployeeEdit = () => {
             担当:
             <input
               type="text"
-              name="workErea"
+              name="workArea"
               value={formData.workErea}
               onChange={handleChange}
               className="employee-edit-input"
