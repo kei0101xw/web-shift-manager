@@ -5,7 +5,6 @@ import "./DeleteEmployee.css";
 const DeleteEmployee = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // const today = new Date().toISOString().slice(0, 10);
 
   const [employee, setEmployee] = useState({
     employeeId: "",
@@ -14,7 +13,6 @@ const DeleteEmployee = () => {
   });
 
   const [errors, setErrors] = useState({});
-  const [submitted, setSubmitted] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -25,7 +23,7 @@ const DeleteEmployee = () => {
   const validate = () => {
     const newErrors = {};
     const idRegex = /^[0-9]+$/;
-    const nameRegex = /^[^\s]+ [^\s]+$/; // 半角スペースが1つ含まれる氏名
+    const nameRegex = /^[^\s]+ [^\s]+$/;
 
     if (!employee.employeeId) {
       newErrors.employeeId = "従業員番号を入力してください。";
@@ -46,44 +44,40 @@ const DeleteEmployee = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setSubmitted(false);
-
     if (!validate()) return;
-
     navigate("/confirmemployee", { state: employee });
   };
 
   return (
-    <>
-      <div className="register-delete-container">
-        <h1>従業員の削除</h1>
-        <form onSubmit={handleSubmit} className="delete-form">
-          <label>従業員番号</label>
-          <input
-            type="number"
-            name="employeeId"
-            value={employee.employeeId}
-            onChange={handleChange}
-            placeholder="例: 12345"
-          />
-          {errors.employeeId && (
-            <p className="error-message">{errors.employeeId}</p>
-          )}
+    <div className="register-delete-container">
+      <h1>従業員の削除</h1>
 
-          <label>氏名</label>
-          <input
-            type="text"
-            name="name"
-            value={employee.name}
-            onChange={handleChange}
-            placeholder="例: 山田 太郎"
-          />
-          {errors.name && <p className="error-message">{errors.name}</p>}
-          <button type="submit">確認へ</button>
-        </form>
-        {submitted && <p className="success-message">次へ</p>}
-      </div>
-    </>
+      <form onSubmit={handleSubmit} className="delete-form">
+        <label>従業員番号</label>
+        <input
+          type="number"
+          name="employeeId"
+          value={employee.employeeId}
+          onChange={handleChange}
+          placeholder="例: 12345"
+        />
+        {errors.employeeId && (
+          <p className="error-message">{errors.employeeId}</p>
+        )}
+
+        <label>氏名</label>
+        <input
+          type="text"
+          name="name"
+          value={employee.name}
+          onChange={handleChange}
+          placeholder="例: 山田 太郎"
+        />
+        {errors.name && <p className="error-message">{errors.name}</p>}
+
+        <button type="submit">確認へ</button>
+      </form>
+    </div>
   );
 };
 
